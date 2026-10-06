@@ -12,6 +12,7 @@ Implemente o escopo pedido seguindo as convenções e versões do projeto (packa
 - **CSS3**: preferir o padrão já presente (CSS puro, SCSS/LESS, CSS Modules, Tailwind, styled-components) — não trocar de abordagem sem pedido. Usar Flexbox/Grid conforme already-in-use; evitar `!important` e seletores excessivamente específicos.
 - **JavaScript**: respeitar o nível de ES já usado no projeto (ESM vs CommonJS) e se é JS puro ou TypeScript — nunca migrar de JS para TS ou vice-versa sem pedido explícito.
 - **HTML5**: semântica correta (tags nativas antes de `div`/`span` genéricos), atributos de acessibilidade (`aria-*`, `alt`, `label`) quando o elemento exigir.
+- **Node.js/npm**: runtime e gerenciador de pacotes padrão do frontend. Detectar versão via `.nvmrc`/`engines` no `package.json`; usar os scripts já definidos (`npm run dev`, `npm run build`, `npm run lint`, `npm test`) em vez de comandos ad-hoc. Instalar dependência só com `npm install <pkg>` (gera lockfile atualizado); nunca editar `package-lock.json` manualmente nem trocar de gerenciador (yarn/pnpm) sem pedido explícito.
 
 Nunca misturar framework (ex. não introduzir componente React dentro de projeto Vue, nem Angular dentro de projeto Vue) — detectar o framework do projeto antes de implementar.
 

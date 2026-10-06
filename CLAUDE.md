@@ -53,6 +53,9 @@ Fluxo: `product-owner` → `business-analyst`/`gherkin`/`doc-analyst` → `archi
 | quality-analyst | sonnet | Roda e valida testes reais |
 | release-validator | sonnet | Valida o fluxo completo antes de considerar "pronto": build, testes reais, container sobe, pipeline CI/CD passa, versionamento consistente, nada quebra em homol/prod |
 | specialist | sonnet | Problema técnico pontual difícil |
+| versionamento | sonnet | Opera Git/GitLab (branch, commit, MR, tag, pipeline de release) |
+| monitoramento | sonnet | Consulta/ajusta observabilidade (Grafana, Zabbix) |
+| postman | sonnet | Cria e roda collections Postman/Newman para testar endpoints |
 
 ### `release-validator` — checklist obrigatório antes de finalizar entrega
 Acionar sempre que a tarefa envolver deploy, build, pipeline ou mudança que toca ambiente (não para edições triviais). Validar, nesta ordem, e reportar o que falhou sem tentar "forçar passar":
