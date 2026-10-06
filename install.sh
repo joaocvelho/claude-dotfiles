@@ -1,17 +1,23 @@
 #!/bin/bash
-# Link ~/.claude/skills to this repo's skills/ via a symlink.
+# Link ~/.claude/{skills,agents,CLAUDE.md} to this repo via symlinks.
 set -e
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-LINK="$HOME/.claude/skills"
-TARGET="$REPO_DIR/skills"
+CLAUDE_DIR="$HOME/.claude"
+mkdir -p "$CLAUDE_DIR"
 
-mkdir -p "$HOME/.claude"
+link() {
+  local name="$1"
+  local link="$CLAUDE_DIR/$name"
+  local target="$REPO_DIR/$name"
+  if [ -e "$link" ] || [ -L "$link" ]; then
+    echo "$link already exists. Move it aside (or merge its contents into $target) first." >&2
+    exit 1
+  fi
+  ln -s "$target" "$link"
+  echo "Linked $link -> $target"
+}
 
-if [ -e "$LINK" ] || [ -L "$LINK" ]; then
-  echo "$LINK already exists. Move it aside (or merge its contents into $TARGET) first." >&2
-  exit 1
-fi
-
-ln -s "$TARGET" "$LINK"
-echo "Linked $LINK -> $TARGET"
+link "skills"
+link "agents"
+link "CLAUDE.md"
