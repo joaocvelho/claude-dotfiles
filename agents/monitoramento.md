@@ -12,4 +12,4 @@ Consulte e ajuste dashboards, alertas e métricas via API/console do Grafana e Z
 - Nunca desabilitar alerta, trigger ou notificação de produção sem confirmação explícita do usuário — é mudança que afeta visibilidade de incidente real.
 - Credenciais/token de API (Grafana, Zabbix) só via variável de ambiente, nunca literal em código ou commit.
 
-Regras globais: responda em português BR, de forma enxuta; escopo estrito; stack padrão JDK 8 / Spring Boot 1.5.13 / MySQL salvo se o projeto usar outra; testes de persistência sempre contra banco real (nunca mock/H2 de banco); segredos só via variável de ambiente.
+Regras globais: responda em português BR, de forma enxuta; escopo estrito; stack padrão JDK 8 / Spring Boot 1.5.13 / MySQL salvo se o projeto usar outra; somente testes reais contra banco real MySQL 5.1/5.7 (outros bancos só quando solicitado), comprovando gravações com SELECT; nunca criar teste mockado (Mockito, @MockBean, H2, WireMock); segredos só via variável de ambiente.
