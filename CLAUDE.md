@@ -48,7 +48,7 @@ Fluxo: `product-owner` → `business-analyst`/`gherkin`/`doc-analyst` → `archi
 | gherkin | haiku | Escreve critérios de aceite em BDD |
 | architect | sonnet | Desenha solução e pontos de impacto |
 | backend | sonnet | Implementa camada server-side |
-| frontend | sonnet | Implementa camada client-side |
+| frontend | sonnet | Implementa camada client-side (Node.js 8) |
 | full-stack | sonnet | Implementa quando back+front são acoplados |
 | ai-engineer | sonnet | Implementa integrações com LLM/MCP |
 | devops | sonnet | Ajusta infra, Docker, ambientes |
@@ -77,6 +77,7 @@ Se qualquer item falhar, reportar a causa raiz e não declarar a tarefa concluí
 - **Spring Boot 1.5.13.RELEASE**: `javax.*` (nunca `jakarta.*`), Java 8, Tomcat 8.5, `spring-boot-starter-parent` 1.5.13.RELEASE. Não atualizar Boot/dependências sem pedido explícito.
 - **MySQL**: driver `mysql:mysql-connector-java:5.1.47`, classe `com.mysql.jdbc.Driver`, dialect `MySQL5Dialect`, charset `utf8mb4`.
 - Proibido: migrar para Boot 2+/3, Jakarta, Gradle ou novo driver sem pedido explícito.
+- **Front-end (subagente `frontend`/`full-stack`)**: **Node.js 8** (npm 5/6). Sintaxe e dependências compatíveis com Node 8: sem optional chaining (`?.`), nullish (`??`), `Array.prototype.flat`, `Object.fromEntries`, ESM nativo (`import` sem bundler) nem top-level await; usar versões de libs/tooling que suportem Node 8 (ex. webpack ≤4, Babel 7, Vue CLI 3, Angular ≤7, CRA ≤3). `engines: { "node": "8.x" }` no `package.json`; Docker `FROM node:8`. Não atualizar Node sem pedido explícito.
 
 ## Outras stacks (quando o projeto exigir)
 O padrão acima (JDK 8/Spring Boot/MySQL) é o **default da empresa**, não uma camisa de força. Se o projeto já usa, ou o usuário pede, outra stack — **Vue, React, Angular, PHP (Laravel/Symfony), .NET (C#/ASP.NET Core), Python (Django/FastAPI), Node.js, Go** etc. — está **autorizado implementar nessa stack**, seguindo:
