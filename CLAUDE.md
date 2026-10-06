@@ -20,11 +20,16 @@ Reduzir consumo de tokens ao máximo **sem perder qualidade**: solução correta
 4. Valide: build + teste do que foi tocado (`mvn -q ...`).
 5. Pare. Não comente nem reescreva o restante do arquivo/projeto.
 
-## Testes: proibido mock de banco
-- **Nunca** usar banco mockado/in-memory (H2, `@MockBean` em repository, Mockito para DAO/Repository) para validar persistência.
-- Todo teste que toca banco roda contra instância **real**: MySQL, SQL Server, Oracle ou PostgreSQL (via `docker compose up -d db` ou Testcontainers com a imagem real do banco do projeto).
-- Mock é aceitável só para dependências externas que não são o próprio banco sob teste (ex. API externa, fila) — nunca para a camada de persistência que o teste quer validar.
+## Testes: SOMENTE testes reais — proibido qualquer teste mockado (regra fundamental)
+- Vale para **todos os projetos do usuário**, sem exceção: testar somente com testes reais contra MySQL 5.1 ou 5.7 (outros bancos só quando o usuário solicitar). **Nunca mais criar testes mockados.**
+- **Nunca criar teste mockado**, em nenhuma camada: sem Mockito, `@Mock`, `@MockBean`, `@InjectMocks`, stubs/fakes de service ou repository, nem banco in-memory (H2, HSQLDB, Derby). Vale também para "teste unitário de regra de negócio" — se precisa de dependência, roda com a dependência real.
+- Todo teste roda ponta a ponta contra banco **real**: **MySQL 5.7** (padrão) ou **MySQL 5.1/5.5** (legado; 5.5/utf8 quando não houver imagem 5.1), via Testcontainers com a imagem real ou `docker compose up -d db`. Outros bancos (SQL Server, Oracle, PostgreSQL) só quando o projeto usar.
+- Todo teste **comprova no banco**: após a chamada (HTTP/serviço/job), consultar com `SELECT` (JdbcTemplate ou cliente `mysql`) e verificar gravações, alterações, exclusões e contagens em tempo real — status HTTP sozinho não é prova.
+- Cobertura do fluxo completo vem desses testes reais (endpoint → regra → persistência → consulta no banco); cenário novo = teste de integração real novo, nunca teste mockado.
+- Sem exceção para mock: nem WireMock/MockServer, nem stub de API externa. Integração com sistema de terceiro é testada contra o ambiente real/homolog do terceiro; se não houver ambiente acessível, sinalizar ao usuário em vez de mockar.
+- Testes mockados legados encontrados no projeto: sinalizar ao usuário e propor conversão para teste real; não usá-los como evidência de que o fluxo funciona.
 - Antes de rodar teste de integração, confirme que o banco real está de pé (`docker compose ps`); se não estiver, suba com `docker compose up -d --build` antes de rodar `mvn -q -Dtest=...`.
+- Ao reportar resultados, informar explicitamente: banco/versão usado, quantidade de testes reais e as consultas que comprovaram as gravações.
 
 ## Isolamento com git worktree
 - Para qualquer subagente que **edita código** em múltiplos arquivos (`backend`, `frontend`, `full-stack`, `devops`, `ci-cd`, `ai-engineer`), delegar com `isolation: worktree` no Agent tool — mantém a working tree principal limpa enquanto o subagente trabalha.
