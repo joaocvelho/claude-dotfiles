@@ -7,6 +7,7 @@ const BAND = {
 test('barra de etapas avança e avisa Etapa concluída', async ($, on) => {
   const toasts: string[] = []
   on('ui.render', () => ({ type: 'engine', ref: 0 }) as never)
+  on('prompt.submit', (_, e) => ({ text: e.text }) as never)
   on('ui.toast', (_, e) => {
     toasts.push(e.text)
     return { value: undefined } as never
@@ -39,4 +40,8 @@ test('barra de etapas avança e avisa Etapa concluída', async ($, on) => {
   })
   expect(await painel.find({ type: 'Text', text: 'Etapa 3/3 ' })).toBeDefined()
   expect(await painel.find({ type: 'Text', text: ' 100%' })).toBeDefined()
+
+  await $.prompt.submit({ text: 'nova mensagem' } as never)
+  const depois = await $.ui.mount({ plugin: 'etapas', surface: 'desktop', ...BAND })
+  expect(await depois.find({ type: 'Text', text: 'Etapa 3/3 ' })).toBeDefined()
 })

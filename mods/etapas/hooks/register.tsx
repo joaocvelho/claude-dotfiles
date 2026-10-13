@@ -8,10 +8,10 @@ const progresso = atom({ plugin: 'etapas', key: 'progresso' } as const, null)
 const TOOL = 'mcp__etapas__etapa'
 
 const INSTRUCAO = [
-  'Progresso por etapas (mod "etapas"): em toda tarefa com 2 ou mais passos, divida o trabalho em etapas e',
+  'Progresso por etapas (mod "etapas"): em toda tarefa que envolva ação, mesmo de um único passo (total=1), divida o trabalho em etapas e',
   `chame a tool ${TOOL} (1) ao planejar, com concluidas=0, o total de etapas e o título da primeira;`,
   '(2) ao concluir cada etapa, com concluidas=quantidade já concluída, o mesmo total e o título da próxima etapa',
-  '(na última, o título da etapa concluída). Se o plano mudar, envie o novo total. Não chame em perguntas simples.',
+  '(na última, o título da etapa concluída). Se o plano mudar, envie o novo total. Só não chame em respostas puramente conversacionais, sem nenhuma ação.',
 ].join(' ')
 
 type Todo = { status: string; activeForm?: string; content?: string }
@@ -105,7 +105,6 @@ export const register: Register = on => {
 
   on('prompt.submit', async ($, e, next) => {
     tarefas.clear()
-    await update($, progresso, () => null)
     return next(e)
   }).catch(($, e, next) => next(e))
 
