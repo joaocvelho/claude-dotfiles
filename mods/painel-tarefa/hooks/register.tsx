@@ -51,12 +51,14 @@ export function pizzaSvg(pct: number, cor: string) {
 export function janela(reset: string | null, pct5h: number | null, agora: number) {
   const resta = reset ? Date.parse(reset) - agora : NaN
   const valido = resta > 0 && resta <= JANELA_5H
+  const expirada = resta <= 0
   return {
-    decorridoPct: valido ? Math.round(((JANELA_5H - resta) * 100) / JANELA_5H) : null,
+    decorridoPct: valido ? Math.round(((JANELA_5H - resta) * 100) / JANELA_5H) : expirada ? 100 : null,
     decorrido: valido ? duracao(JANELA_5H - resta) : null,
-    restaPct: valido ? Math.round((resta * 100) / JANELA_5H) : null,
+    restaPct: valido ? Math.round((resta * 100) / JANELA_5H) : expirada ? 0 : null,
     resta: valido ? duracao(resta) : null,
-    usado: pct5h === null ? null : Math.round(pct5h),
+    usado: expirada ? 0 : pct5h === null ? null : Math.round(pct5h),
+    expirada,
   }
 }
 
@@ -193,8 +195,8 @@ async function conteudo($: EngineInterface, surface: string, colunas: number, ta
   const j = janela(u ? u.reset : null, u ? u.pct5h : null, agora)
   const corUso = j.usado === null ? 'gray' : j.usado >= 80 ? 'red' : j.usado >= 50 ? 'yellow' : 'green'
   const pizzas = [
-    { id: 'janela', rotulo: 'Janela', pct: j.decorridoPct, valor: j.decorrido ? `${j.decorrido} de 5h` : 'sem leitura', cor: 'cyan' },
-    { id: 'expira', rotulo: 'Expira em:', pct: j.restaPct, valor: j.resta || 'sem leitura', cor: 'blue' },
+    { id: 'janela', rotulo: 'Janela', pct: j.decorridoPct, valor: j.decorrido ? `${j.decorrido} de 5h` : j.expirada ? 'encerrada' : 'sem leitura', cor: 'cyan' },
+    { id: 'expira', rotulo: 'Expira em:', pct: j.restaPct, valor: j.resta || (j.expirada ? 'nova janela na próxima mensagem' : 'sem leitura'), cor: 'blue' },
     { id: 'usado', rotulo: '% utilizado', pct: j.usado, valor: j.usado === null ? 'sem leitura' : `${j.usado}%`, cor: corUso },
   ]
   linhas.push(
@@ -219,6 +221,7 @@ export const register: Register = on => {
     $.clock.every(30000, () => {
       void update($, tick, n => ((n as number) || 0) + 1)
       void atualizarAgentes($).catch(() => undefined)
+      void medir($).catch(() => undefined)
     })
     void medir($).catch(() => undefined)
     return next(e)

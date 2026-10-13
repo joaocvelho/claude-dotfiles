@@ -25,8 +25,11 @@ test('estimativa de tempo total pela fração concluída', () => {
 test('pizzas da janela de 5h', () => {
   const agora = 1000000000
   const j = janela(new Date(agora + 100 * 60000).toISOString(), 62, agora)
-  expect(j).toEqual({ decorridoPct: 67, decorrido: '3h20', restaPct: 33, resta: '1h40', usado: 62 })
+  expect(j).toEqual({ decorridoPct: 67, decorrido: '3h20', restaPct: 33, resta: '1h40', usado: 62, expirada: false })
   expect(janela(null, null, agora).resta).toBe(null)
+  expect(janela(null, null, agora).expirada).toBe(false)
+  const fim = janela(new Date(agora - 60000).toISOString(), 62, agora)
+  expect(fim).toEqual({ decorridoPct: 100, decorrido: null, restaPct: 0, resta: null, usado: 0, expirada: true })
   expect([fatia(0), fatia(20), fatia(50), fatia(70), fatia(100)]).toEqual(['○', '◔', '◑', '◕', '●'])
   expect(pizzaSvg(25, '#2563EB')).toContain('A10 10 0 0 1 22.00 12.00')
   expect(pizzaSvg(100, '#2563EB')).toContain('fill="#2563EB"')
