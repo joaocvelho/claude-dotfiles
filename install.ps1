@@ -49,7 +49,7 @@ Copy-Item (Join-Path $PSScriptRoot "statusline.js") (Join-Path $claudeDir "statu
 Write-Host "Copied hooks and statusline.js"
 
 $settingsDest = Join-Path $claudeDir "settings.json"
-$settingsText = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot "settings.json"), $utf8) -replace 'C:/Users/joao\.velho', $homeFwd
+$settingsText = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot "settings.json"), $utf8) -replace 'C:/Users/joao\.velho', $homeFwd -replace 'C:\\\\Users\\\\joao\.velho', $homeJson
 if (Test-Path $settingsDest) {
     $old = [System.IO.File]::ReadAllText($settingsDest, $utf8) | ConvertFrom-Json
     if ($old.autoMode) {

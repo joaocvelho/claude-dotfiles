@@ -1,0 +1,8 @@
+{
+  "name": "joao-mods",
+  "owner": { "name": "Joao Velho" },
+  "plugins": [
+    { "name": "painel-tarefa", "source": "./painel-tarefa", "description": "Faixa de progresso da tarefa, contexto, tempo, modelo, janela de 5h e subagentes." },
+    { "name": "etapas", "source": "./etapas", "description": "Barra de etapas N/total com alerta de etapa concluida." }
+  ]
+}

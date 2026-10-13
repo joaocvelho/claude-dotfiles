@@ -1,0 +1,1 @@
+{ "name": "painel-tarefa", "version": "0.1.0", "description": "Faixa acima do prompt: progresso da tarefa, contexto colorido, estimativa de tempo, modelo, janela de 5h e subagentes.", "types": "./types/index.d.ts" }

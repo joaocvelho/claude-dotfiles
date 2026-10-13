@@ -25,6 +25,18 @@
     "command": "node C:/Users/joao.velho/.claude/statusline.js",
     "refreshInterval": 2
   },
+  "enabledPlugins": {
+    "painel-tarefa@joao-mods": true,
+    "etapas@joao-mods": true
+  },
+  "extraKnownMarketplaces": {
+    "joao-mods": {
+      "source": {
+        "source": "directory",
+        "path": "C:\\\\Users\\\\joao.velho\\\\Desktop\\\\claude-dotfiles\\\\mods"
+      }
+    }
+  },
   "autoCompactWindow": 450000,
   "outputStyle": "Concise",
   "language": "portuguese",
