@@ -159,6 +159,8 @@ async function conteudo($: EngineInterface, surface: string, colunas: number, ta
     linhas.push(
       <Box key="ctx" flexDirection="row" gap={comSvg ? 1 : 0} alignItems="center">
         <Text bold>{'Contexto '}</Text>
+        <Box key="barra-ctx">{barra(pctCtx, cor)}</Box>
+        <Text bold color={cor}>{` ${pctCtx} % `}</Text>
         {pizza('ctx', pctCtx, cor, `Contexto ${tokensTexto(u.tokens, u.janela)}`)}
         <Text bold color={cor}>{tokensTexto(u.tokens, u.janela)}</Text>
         {u.tokens > AMARELO ? <Text color="red">{' ⚠ /compact'}</Text> : null}

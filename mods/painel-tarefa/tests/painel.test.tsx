@@ -54,6 +54,7 @@ test('faixa mostra tarefa, contexto, agentes, modelo e as três pizzas', async (
     expect(await ui.find({ type: 'Text', text: ' · total ~40m (faltam ~20m)' })).toBeDefined()
     const ctx = await ui.find({ type: 'Text', text: '580 K / 1000 K' })
     expect(ctx?.props.color).toBe('red')
+    expect(await ui.find({ type: 'Text', text: ' 58 % ' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: ' ⚠ /compact' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: 'Agentes  ' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: 'claude-opus-5-5' })).toBeDefined()
