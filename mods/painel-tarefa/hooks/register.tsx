@@ -8,8 +8,8 @@ const tarefa = atom({ plugin: 'painel-tarefa', key: 'tarefa' } as const, null)
 const agentes = atom({ plugin: 'painel-tarefa', key: 'agentes' } as const, [])
 const tick = atom({ plugin: 'painel-tarefa', key: 'tick' } as const, 0)
 
-const VERDE = 300000
-const AMARELO = 550000
+const VERDE = 450000
+const AMARELO = 600000
 const JANELA_5H = 5 * 60 * 60000
 const ETAPA = 'mcp__etapas__etapa'
 

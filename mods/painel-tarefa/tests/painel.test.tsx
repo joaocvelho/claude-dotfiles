@@ -7,13 +7,13 @@ const BAND = {
   props: { hasSurvey: false, isWorking: true, maxRows: 20, bodyColumns: 120, scroll: { offset: 0, bodyRows: 20 }, view: {} },
 } as const
 
-test('cores do contexto: verde até 300K, amarelo até 550K, vermelho acima', () => {
+test('cores do contexto: verde até 450K, amarelo até 600K, vermelho acima', () => {
   expect(corContexto(120000)).toBe('green')
-  expect(corContexto(300000)).toBe('green')
-  expect(corContexto(450000)).toBe('yellow')
-  expect(corContexto(550000)).toBe('yellow')
-  expect(corContexto(550001)).toBe('red')
-  expect(corContexto(600000)).toBe('red')
+  expect(corContexto(450000)).toBe('green')
+  expect(corContexto(500000)).toBe('yellow')
+  expect(corContexto(600000)).toBe('yellow')
+  expect(corContexto(600001)).toBe('red')
+  expect(corContexto(700000)).toBe('red')
 })
 
 test('estimativa de tempo total pela fração concluída', () => {
@@ -43,7 +43,7 @@ test('faixa mostra tarefa, contexto, agentes, modelo e as três pizzas', async (
   await $.tool.call({ tool: 'mcp__etapas__etapa', concluidas: 1, total: 2, titulo: 'x' } as never)
   await relogio.advance(20 * 60000)
   await $.session.measure({
-    context: { tokens: 580000, window: 1000000 },
+    context: { tokens: 650000, window: 1000000 },
     rateLimits: [{ kind: 'five_hour', percentUsed: 62, resetsAt: new Date(20 * 60000 + 100 * 60000).toISOString() }],
     changed: ['context', 'rateLimits'],
   } as never)
@@ -52,9 +52,9 @@ test('faixa mostra tarefa, contexto, agentes, modelo e as três pizzas', async (
     const ui = await $.ui.mount({ plugin: 'painel-tarefa', surface, ...BAND })
     expect(await ui.find({ type: 'Text', text: ' 50%' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: ' · total ~40m (faltam ~20m)' })).toBeDefined()
-    const ctx = await ui.find({ type: 'Text', text: '580 K / 1000 K' })
+    const ctx = await ui.find({ type: 'Text', text: '650 K / 1000 K' })
     expect(ctx?.props.color).toBe('red')
-    expect(await ui.find({ type: 'Text', text: ' 58 % ' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: ' 65 % ' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: ' ⚠ /compact' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: 'Agentes  ' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: 'claude-opus-5-5' })).toBeDefined()
@@ -73,7 +73,7 @@ test('faixa mostra tarefa, contexto, agentes, modelo e as três pizzas', async (
     requestId: 'painel-tarefa',
     props: { title: 'Painel da tarefa', isFocused: false, bodyColumns: 80, placement: 'dock', scroll: { offset: 0, bodyRows: 20 }, view: {} },
   })
-  expect(await painel.find({ type: 'Text', text: '580 K / 1000 K' })).toBeDefined()
+  expect(await painel.find({ type: 'Text', text: '650 K / 1000 K' })).toBeDefined()
   expect(await painel.find({ type: 'Text', text: 'claude-opus-5-5' })).toBeDefined()
   expect(await painel.findAll({ type: 'Svg' })).toHaveLength(4)
   await painel.unmount()
