@@ -48,15 +48,18 @@ async function sincronizar($: EngineInterface) {
 
 const PAINEL = 'etapas'
 
+const VAZIO: Etapas = { concluidas: 0, total: 0, titulo: '' }
+
 type Tabela = { Box: any; Text: any }
 
 function bloco(p: Etapas, colunas: number, tabela: Tabela) {
   const { Box, Text } = tabela
-  const pct = Math.round((p.concluidas * 100) / p.total)
+  const vazio = p.total === 0
+  const pct = vazio ? 0 : Math.round((p.concluidas * 100) / p.total)
   const largura = Math.max(10, Math.min(30, colunas - 50))
   const cheio = Math.round((pct * largura) / 100)
-  const fim = p.concluidas >= p.total
-  const etapaAtual = fim ? p.total : p.concluidas + 1
+  const fim = !vazio && p.concluidas >= p.total
+  const etapaAtual = vazio ? 0 : fim ? p.total : p.concluidas + 1
   const cor = fim ? 'green' : 'cyan'
   return (
     <Box flexDirection="column">
@@ -65,7 +68,7 @@ function bloco(p: Etapas, colunas: number, tabela: Tabela) {
         <Text color={cor}>{'█'.repeat(cheio)}</Text>
         <Text dimColor>{'░'.repeat(largura - cheio)}</Text>
         <Text bold color={cor}>{` ${pct}%`}</Text>
-        <Text dimColor>{` · ${p.concluidas} concluída(s), ${p.total - p.concluidas} restante(s)`}</Text>
+        <Text dimColor>{vazio ? ' · aguardando tarefa' : ` · ${p.concluidas} concluída(s), ${p.total - p.concluidas} restante(s)`}</Text>
       </Box>
       {p.titulo ? (
         <Text dimColor wrap="truncate-end">
@@ -163,15 +166,13 @@ export const register: Register = on => {
   })
 
   on('ui.render', { component: 'Pane', requestId: PAINEL }, async ($, e) => {
-    const p = (await read($, progresso)) as Etapas | null
-    const tabela = $.ui.resolve(e) as unknown as Tabela
-    if (p === null) return <tabela.Text dimColor>Nenhuma tarefa em etapas ainda.</tabela.Text>
-    return bloco(p, e.props.bodyColumns, tabela)
+    const p = ((await read($, progresso)) as Etapas | null) || VAZIO
+    return bloco(p, e.props.bodyColumns, $.ui.resolve(e) as unknown as Tabela)
   })
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    const p = (await read($, progresso)) as Etapas | null
-    if (e.props.hasSurvey || p === null) return next(e)
+    const p = ((await read($, progresso)) as Etapas | null) || VAZIO
+    if (e.props.hasSurvey) return next(e)
 
     const { Box } = $.ui.resolve(e)
     const minha = bloco(p, e.props.bodyColumns, $.ui.resolve(e) as unknown as Tabela)

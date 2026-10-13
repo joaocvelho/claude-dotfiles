@@ -13,6 +13,11 @@ test('barra de etapas avança e avisa Etapa concluída', async ($, on) => {
     return { value: undefined } as never
   })
 
+  const inicio = await $.ui.mount({ plugin: 'etapas', surface: 'desktop', ...BAND })
+  expect(await inicio.find({ type: 'Text', text: 'Etapa 0/0 ' })).toBeDefined()
+  expect(await inicio.find({ type: 'Text', text: ' · aguardando tarefa' })).toBeDefined()
+  await inicio.unmount()
+
   await $.tool.call({ tool: 'mcp__etapas__etapa', concluidas: 0, total: 3, titulo: 'Planejar' } as never)
   await $.tool.call({ tool: 'mcp__etapas__etapa', concluidas: 1, total: 3, titulo: 'Implementar' } as never)
 
