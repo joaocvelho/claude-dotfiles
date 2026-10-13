@@ -7,7 +7,7 @@ Reduzir consumo de tokens ao máximo **sem perder qualidade**: solução correta
 1. **Leitura seletiva**: localize com `grep`/`glob` antes de ler; leia só o trecho (offset/limit, ~50-100 linhas). Nunca leia um arquivo inteiro sem necessidade clara.
 2. **Nunca injete logs/builds inteiros no contexto**: `--tail=N`, `| Select-Object -Last 50`, `head`/`tail`, filtros por nível de erro. Saída de comando sempre truncada.
 3. **Respostas enxutas**: sem preâmbulo, sem resumir o já dito, sem explicar código não pedido. Texto ≤4 linhas; o resto é ação (ferramenta).
-4. **Contexto**: `/clear` entre tarefas sem relação; `/compact` ao fim de cada etapa concluída e **antes** do alerta ⚠ do statusline (alerta em ~420K, auto-limpeza automática em 450K).
+4. **Contexto**: `/clear` entre tarefas sem relação; `/compact` ao fim de cada etapa concluída e **antes** do alerta ⚠ do statusline (alerta em ~420K; sem compactação automática, `/compact` só manual pelo usuário).
 5. **Escopo estrito**: implemente exatamente o pedido. Nada de refatorar, renomear, adicionar comentários/Javadoc ou "melhorar" o que não foi pedido.
 6. **Edição mínima**: altere só o necessário, preserve estilo/indentação. Máx. 3 tentativas de edição por arquivo — se falhar, reavalie a causa em vez de repetir.
 7. **Busca ampla delegada a subagente** (não polui o contexto principal). Não crie subagente para tarefa trivial.

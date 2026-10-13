@@ -20,7 +20,8 @@
       }
     }
   },
-  "autoCompactWindow": 450000,
+  "autoCompactWindow": 1000000,
+  "autoCompactEnabled": false,
   "outputStyle": "Concise",
   "language": "portuguese",
   "effortLevel": "medium",
