@@ -46,8 +46,40 @@ async function sincronizar($: EngineInterface) {
   })
 }
 
+const PAINEL = 'etapas'
+
+type Tabela = { Box: any; Text: any }
+
+function bloco(p: Etapas, colunas: number, tabela: Tabela) {
+  const { Box, Text } = tabela
+  const pct = Math.round((p.concluidas * 100) / p.total)
+  const largura = Math.max(10, Math.min(30, colunas - 50))
+  const cheio = Math.round((pct * largura) / 100)
+  const fim = p.concluidas >= p.total
+  const etapaAtual = fim ? p.total : p.concluidas + 1
+  const cor = fim ? 'green' : 'cyan'
+  return (
+    <Box flexDirection="column">
+      <Box>
+        <Text bold>{`Etapa ${etapaAtual}/${p.total} `}</Text>
+        <Text color={cor}>{'█'.repeat(cheio)}</Text>
+        <Text dimColor>{'░'.repeat(largura - cheio)}</Text>
+        <Text bold color={cor}>{` ${pct}%`}</Text>
+        <Text dimColor>{` · ${p.concluidas} concluída(s), ${p.total - p.concluidas} restante(s)`}</Text>
+      </Box>
+      {p.titulo ? (
+        <Text dimColor wrap="truncate-end">
+          {fim ? `✓ Etapa concluída: ${p.titulo}` : `▶ ${p.titulo}`}
+        </Text>
+      ) : null}
+    </Box>
+  )
+}
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
+    await $.command.register({ name: 'etapas', description: 'Abre o painel de etapas da tarefa' }).catch(() => undefined)
+    if ((await $.session.surfaces()).includes('vscode')) void $.ui.open({ id: PAINEL, title: 'Etapas' }).catch(() => undefined)
     await $.tool.register({
       name: 'etapa',
       description:
@@ -120,34 +152,30 @@ export const register: Register = on => {
     return r
   }).catch(($, e, next) => next(e))
 
+  on('session.attach', async ($, e, next) => {
+    const r = await next(e)
+    if (e.surface === 'vscode') await $.ui.open({ id: PAINEL, title: 'Etapas' }).catch(() => undefined)
+    return r
+  })
+
+  on('command.run', { command: 'etapas' }, async $ => {
+    await $.ui.open({ id: PAINEL, title: 'Etapas' })
+    return { text: 'Painel de etapas aberto.' }
+  })
+
+  on('ui.render', { component: 'Pane', requestId: PAINEL }, async ($, e) => {
+    const p = (await read($, progresso)) as Etapas | null
+    const tabela = $.ui.resolve(e) as unknown as Tabela
+    if (p === null) return <tabela.Text dimColor>Nenhuma tarefa em etapas ainda.</tabela.Text>
+    return bloco(p, e.props.bodyColumns, tabela)
+  })
+
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const p = (await read($, progresso)) as Etapas | null
     if (e.props.hasSurvey || p === null) return next(e)
 
-    const { Box, Text } = $.ui.resolve(e)
-    const pct = Math.round((p.concluidas * 100) / p.total)
-    const largura = Math.max(10, Math.min(30, e.props.bodyColumns - 50))
-    const cheio = Math.round((pct * largura) / 100)
-    const fim = p.concluidas >= p.total
-    const etapaAtual = fim ? p.total : p.concluidas + 1
-    const cor = fim ? 'green' : 'cyan'
-
-    const minha = (
-      <Box flexDirection="column">
-        <Box>
-          <Text bold>{`Etapa ${etapaAtual}/${p.total} `}</Text>
-          <Text color={cor}>{'█'.repeat(cheio)}</Text>
-          <Text dimColor>{'░'.repeat(largura - cheio)}</Text>
-          <Text bold color={cor}>{` ${pct}%`}</Text>
-          <Text dimColor>{` · ${p.concluidas} concluída(s), ${p.total - p.concluidas} restante(s)`}</Text>
-        </Box>
-        {p.titulo ? (
-          <Text dimColor wrap="truncate-end">
-            {fim ? `✓ Etapa concluída: ${p.titulo}` : `▶ ${p.titulo}`}
-          </Text>
-        ) : null}
-      </Box>
-    )
+    const { Box } = $.ui.resolve(e)
+    const minha = bloco(p, e.props.bodyColumns, $.ui.resolve(e) as unknown as Tabela)
 
     const abaixo = await next(e)
     if (!abaixo || (abaixo as { type?: string }).type === 'engine') return minha

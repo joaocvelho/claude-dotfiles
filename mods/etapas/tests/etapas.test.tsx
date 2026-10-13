@@ -29,4 +29,14 @@ test('barra de etapas avança e avisa Etapa concluída', async ($, on) => {
   const fim = await $.ui.mount({ plugin: 'etapas', surface: 'desktop', ...BAND })
   expect(await fim.find({ type: 'Text', text: ' 100%' })).toBeDefined()
   expect(await fim.find({ type: 'Text', text: /Etapa concluída: Validar/ })).toBeDefined()
+
+  const painel = await $.ui.mount({
+    plugin: 'etapas',
+    surface: 'vscode',
+    component: 'Pane',
+    requestId: 'etapas',
+    props: { title: 'Etapas', isFocused: false, bodyColumns: 80, placement: 'dock', scroll: { offset: 0, bodyRows: 20 }, view: {} },
+  })
+  expect(await painel.find({ type: 'Text', text: 'Etapa 3/3 ' })).toBeDefined()
+  expect(await painel.find({ type: 'Text', text: ' 100%' })).toBeDefined()
 })

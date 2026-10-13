@@ -1,6 +1,6 @@
 import { expect, mock, test } from 'claude-code/testing'
 
-import { corContexto, duracao, estimar, fatia, janela, pizzaSvg } from '../hooks/register'
+import { corContexto, duracao, estimar, fatia, janela, pizzaSvg, tokensTexto } from '../hooks/register'
 
 const BAND = {
   component: 'AbovePrompt',
@@ -52,15 +52,32 @@ test('faixa mostra tarefa, contexto, agentes, modelo e as três pizzas', async (
     const ui = await $.ui.mount({ plugin: 'painel-tarefa', surface, ...BAND })
     expect(await ui.find({ type: 'Text', text: ' 50%' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: ' · total ~40m (faltam ~20m)' })).toBeDefined()
-    const ctx = await ui.find({ type: 'Text', text: ' 58% 580K/1000K' })
+    const ctx = await ui.find({ type: 'Text', text: '580 K / 1000 K' })
     expect(ctx?.props.color).toBe('red')
+    expect(await ui.find({ type: 'Text', text: ' ⚠ /compact' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: 'Agentes  ' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: 'claude-opus-5-5' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /3h20 de 5h/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /1h40/ })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /62%/ })).toBeDefined()
-    if (surface === 'desktop') expect(await ui.findAll({ type: 'Svg' })).toHaveLength(3)
-    else expect(await ui.find({ type: 'Text', text: '◕ ' })).toBeDefined()
+    if (surface === 'desktop') expect(await ui.findAll({ type: 'Svg' })).toHaveLength(4)
+    else expect(await ui.findAll({ type: 'Text', text: '◕ ' })).toHaveLength(3)
     await ui.unmount()
   }
+
+  const painel = await $.ui.mount({
+    plugin: 'painel-tarefa',
+    surface: 'vscode',
+    component: 'Pane',
+    requestId: 'painel-tarefa',
+    props: { title: 'Painel da tarefa', isFocused: false, bodyColumns: 80, placement: 'dock', scroll: { offset: 0, bodyRows: 20 }, view: {} },
+  })
+  expect(await painel.find({ type: 'Text', text: '580 K / 1000 K' })).toBeDefined()
+  expect(await painel.find({ type: 'Text', text: 'claude-opus-5-5' })).toBeDefined()
+  expect(await painel.findAll({ type: 'Svg' })).toHaveLength(4)
+  await painel.unmount()
+})
+
+test('tokens no formato do contexto', () => {
+  expect(tokensTexto(278000, 1000000)).toBe('278 K / 1000 K')
 })

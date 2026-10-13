@@ -104,8 +104,116 @@ async function contarTarefas($: EngineInterface) {
   await progresso($, status.filter(s => s === 'completed').length, status.length)
 }
 
+const PAINEL = 'painel-tarefa'
+
+type Tabela = { Box: any; Text: any; Svg?: any }
+
+const CORES: Record<string, string> = { green: '#16A34A', yellow: '#D97706', red: '#DC2626', blue: '#2563EB', cyan: '#0891B2', gray: '#6B7280' }
+
+export function tokensTexto(tokens: number, janela: number) {
+  return `${k(tokens).replace('K', ' K')} / ${k(janela).replace('K', ' K')}`
+}
+
+async function conteudo($: EngineInterface, surface: string, colunas: number, tabela: Tabela) {
+  const { Box, Text, Svg } = tabela
+  const comSvg = (surface === 'desktop' || surface === 'vscode') && !!Svg
+  await read($, tick)
+  const u = (await read($, uso)) as Uso | null
+  const t = (await read($, tarefa)) as Tarefa | null
+  const ags = (await read($, agentes)) as Agente[]
+  const nomeModelo = await $.session.model()
+  const agora = await $.clock.now()
+
+  const largura = Math.max(10, Math.min(24, Math.floor((colunas - 50) / 2)))
+  const barra = (pct: number, cor: string) => {
+    const cheio = Math.max(0, Math.min(largura, Math.round((pct * largura) / 100)))
+    return [
+      <Text key="c" color={cor}>{'█'.repeat(cheio)}</Text>,
+      <Text key="v" dimColor>{'░'.repeat(largura - cheio)}</Text>,
+    ]
+  }
+  const pizza = (id: string, pct: number, cor: string, alt: string) =>
+    comSvg ? (
+      <Svg key={`s-${id}`} source={pizzaSvg(pct, CORES[cor] || cor)} alt={alt} width={20} height={20} />
+    ) : (
+      <Text key={`g-${id}`} color={cor}>{`${fatia(pct)} `}</Text>
+    )
+
+  const linhas = []
+
+  if (t) {
+    const pct = t.total > 0 ? Math.round((t.concluidas * 100) / t.total) : t.ativa ? 0 : 100
+    linhas.push(
+      <Box key="tarefa">
+        <Text bold>{'Tarefa   '}</Text>
+        {barra(pct, t.ativa ? 'cyan' : 'green')}
+        <Text bold>{` ${pct}%`}</Text>
+        <Text dimColor>{` · ${estimar(t, agora)}`}</Text>
+      </Box>,
+    )
+  }
+
+  if (u) {
+    const cor = corContexto(u.tokens)
+    const pctCtx = u.janela > 0 ? Math.round((u.tokens * 100) / u.janela) : 0
+    linhas.push(
+      <Box key="ctx" flexDirection="row" gap={comSvg ? 1 : 0} alignItems="center">
+        <Text bold>{'Contexto '}</Text>
+        {pizza('ctx', pctCtx, cor, `Contexto ${tokensTexto(u.tokens, u.janela)}`)}
+        <Text bold color={cor}>{tokensTexto(u.tokens, u.janela)}</Text>
+        {u.tokens > AMARELO ? <Text color="red">{' ⚠ /compact'}</Text> : null}
+      </Box>,
+    )
+  }
+
+  const ativos = ags.filter(a => a.ativo)
+  const feitos = ags.filter(a => !a.ativo).slice(-4)
+  linhas.push(
+    <Box key="agentes">
+      <Text bold>{'Agentes  '}</Text>
+      {ags.length === 0 ? <Text dimColor>nenhum subagente nesta etapa</Text> : null}
+      {ativos.map(a => (
+        <Text key={`a-${a.id}`} color="magenta">{`▶ ${a.tipo}${a.descricao ? ` (${a.descricao})` : ''}  `}</Text>
+      ))}
+      {feitos.map(a => (
+        <Text key={`f-${a.id}`} dimColor>{`✓ ${a.tipo}  `}</Text>
+      ))}
+    </Box>,
+  )
+
+  linhas.push(
+    <Box key="modelo">
+      <Text bold>{'Modelo   '}</Text>
+      <Text color="blue">{nomeModelo}</Text>
+    </Box>,
+  )
+
+  const j = janela(u ? u.reset : null, u ? u.pct5h : null, agora)
+  const corUso = j.usado === null ? 'gray' : j.usado >= 80 ? 'red' : j.usado >= 50 ? 'yellow' : 'green'
+  const pizzas = [
+    { id: 'janela', rotulo: 'Janela', pct: j.decorridoPct, valor: j.decorrido ? `${j.decorrido} de 5h` : 'sem leitura', cor: 'cyan' },
+    { id: 'expira', rotulo: 'Expira em:', pct: j.restaPct, valor: j.resta || 'sem leitura', cor: 'blue' },
+    { id: 'usado', rotulo: '% utilizado', pct: j.usado, valor: j.usado === null ? 'sem leitura' : `${j.usado}%`, cor: corUso },
+  ]
+  linhas.push(
+    <Box key="pizzas" flexDirection="row" gap={comSvg ? 3 : 0}>
+      {pizzas.map(p => (
+        <Box key={`p-${p.id}`} flexDirection="row" gap={comSvg ? 1 : 0} alignItems="center">
+          {pizza(p.id, p.pct || 0, p.cor, `${p.rotulo} ${p.valor}`)}
+          <Text bold>{`${p.rotulo} `}</Text>
+          <Text color={p.cor}>{comSvg ? p.valor : `${p.valor}   `}</Text>
+        </Box>
+      ))}
+    </Box>,
+  )
+
+  return linhas
+}
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
+    await $.command.register({ name: 'painel-tarefa', description: 'Abre o painel da tarefa (progresso, contexto, janela de 5h e subagentes)' }).catch(() => undefined)
+    if ((await $.session.surfaces()).includes('vscode')) void $.ui.open({ id: PAINEL, title: 'Painel da tarefa' }).catch(() => undefined)
     $.clock.every(30000, () => {
       void update($, tick, n => ((n as number) || 0) + 1)
       void atualizarAgentes($).catch(() => undefined)
@@ -185,109 +293,31 @@ export const register: Register = on => {
     return r
   }).catch(($, e, next) => next(e))
 
+  on('session.attach', async ($, e, next) => {
+    const r = await next(e)
+    if (e.surface === 'vscode') await $.ui.open({ id: PAINEL, title: 'Painel da tarefa' }).catch(() => undefined)
+    return r
+  })
+
+  on('command.run', { command: 'painel-tarefa' }, async $ => {
+    await $.ui.open({ id: PAINEL, title: 'Painel da tarefa' })
+    return { text: 'Painel da tarefa aberto.' }
+  })
+
+  on('ui.render', { component: 'Pane', requestId: PAINEL }, async ($, e) => {
+    const { Box, Text } = $.ui.resolve(e)
+    const linhas = await conteudo($, e.surface, e.props.bodyColumns, $.ui.resolve(e) as unknown as Tabela)
+    return (
+      <Box flexDirection="column">
+        {linhas.length > 0 ? linhas : <Text dimColor>Aguardando a primeira tarefa…</Text>}
+      </Box>
+    )
+  })
+
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     if (e.props.hasSurvey) return next(e)
-    await read($, tick)
-    const u = (await read($, uso)) as Uso | null
-    const t = (await read($, tarefa)) as Tarefa | null
-    const ags = (await read($, agentes)) as Agente[]
-    const nomeModelo = await $.session.model()
-    const agora = await $.clock.now()
-
-    const { Box, Text } = $.ui.resolve(e)
-    const largura = Math.max(10, Math.min(24, Math.floor((e.props.bodyColumns - 50) / 2)))
-    const barra = (pct: number, cor: string) => {
-      const cheio = Math.max(0, Math.min(largura, Math.round((pct * largura) / 100)))
-      return [
-        <Text key="c" color={cor}>{'█'.repeat(cheio)}</Text>,
-        <Text key="v" dimColor>{'░'.repeat(largura - cheio)}</Text>,
-      ]
-    }
-
-    const linhas = []
-
-    if (t) {
-      const pct = t.total > 0 ? Math.round((t.concluidas * 100) / t.total) : t.ativa ? 0 : 100
-      linhas.push(
-        <Box key="tarefa">
-          <Text bold>{'Tarefa   '}</Text>
-          {barra(pct, t.ativa ? 'cyan' : 'green')}
-          <Text bold>{` ${pct}%`}</Text>
-          <Text dimColor>{` · ${estimar(t, agora)}`}</Text>
-        </Box>,
-      )
-    }
-
-    if (u) {
-      const cor = corContexto(u.tokens)
-      const pctCtx = u.janela > 0 ? Math.round((u.tokens * 100) / u.janela) : 0
-      linhas.push(
-        <Box key="ctx">
-          <Text bold>{'Contexto '}</Text>
-          {barra(pctCtx, cor)}
-          <Text bold color={cor}>{` ${pctCtx}% ${k(u.tokens)}/${k(u.janela)}`}</Text>
-          {u.tokens > AMARELO ? <Text color="red">{' ⚠ /compact'}</Text> : null}
-        </Box>,
-      )
-    }
-
-    const ativos = ags.filter(a => a.ativo)
-    const feitos = ags.filter(a => !a.ativo).slice(-4)
-    linhas.push(
-      <Box key="agentes">
-        <Text bold>{'Agentes  '}</Text>
-        {ags.length === 0 ? <Text dimColor>nenhum subagente nesta etapa</Text> : null}
-        {ativos.map(a => (
-          <Text key={`a-${a.id}`} color="magenta">{`▶ ${a.tipo}${a.descricao ? ` (${a.descricao})` : ''}  `}</Text>
-        ))}
-        {feitos.map(a => (
-          <Text key={`f-${a.id}`} dimColor>{`✓ ${a.tipo}  `}</Text>
-        ))}
-      </Box>,
-    )
-
-    linhas.push(
-      <Box key="modelo">
-        <Text bold>{'Modelo   '}</Text>
-        <Text color="blue">{nomeModelo}</Text>
-      </Box>,
-    )
-
-    const j = janela(u ? u.reset : null, u ? u.pct5h : null, agora)
-    const corUso = j.usado === null ? '#6B7280' : j.usado >= 80 ? '#DC2626' : j.usado >= 50 ? '#D97706' : '#16A34A'
-    const pizzas = [
-      { id: 'janela', rotulo: 'Janela', pct: j.decorridoPct, valor: j.decorrido ? `${j.decorrido} de 5h` : 'sem leitura', cor: '#0891B2' },
-      { id: 'expira', rotulo: 'Expira em: ', pct: j.restaPct, valor: j.resta || 'sem leitura', cor: '#2563EB' },
-      { id: 'usado', rotulo: '% utilizado', pct: j.usado, valor: j.usado === null ? 'sem leitura' : `${j.usado}%`, cor: corUso },
-    ]
-    const corTexto = (hex: string) =>
-      hex === '#DC2626' ? 'red' : hex === '#D97706' ? 'yellow' : hex === '#16A34A' ? 'green' : hex === '#2563EB' ? 'blue' : hex === '#0891B2' ? 'cyan' : 'gray'
-
-    if (e.surface === 'desktop') {
-      const { Svg } = $.ui.resolve(e)
-      linhas.push(
-        <Box key="pizzas" flexDirection="row" gap={3}>
-          {pizzas.map(p => (
-            <Box key={`p-${p.id}`} flexDirection="row" gap={1} alignItems="center">
-              <Svg source={pizzaSvg(p.pct || 0, p.cor)} alt={`${p.rotulo} ${p.valor}`} width={24} height={24} />
-              <Text bold>{p.rotulo.replace(/: $/, ':')}</Text>
-              <Text color={corTexto(p.cor)}>{p.valor}</Text>
-            </Box>
-          ))}
-        </Box>,
-      )
-    } else {
-      linhas.push(
-        <Box key="pizzas">
-          {pizzas.map(p => [
-            <Text key={`g-${p.id}`} color={corTexto(p.cor)}>{`${fatia(p.pct || 0)} `}</Text>,
-            <Text key={`r-${p.id}`} bold>{p.rotulo.endsWith(': ') ? p.rotulo : `${p.rotulo} `}</Text>,
-            <Text key={`v-${p.id}`} color={corTexto(p.cor)}>{`${p.valor}   `}</Text>,
-          ])}
-        </Box>,
-      )
-    }
-
+    const { Box } = $.ui.resolve(e)
+    const linhas = await conteudo($, e.surface, e.props.bodyColumns, $.ui.resolve(e) as unknown as Tabela)
     const minha = <Box flexDirection="column">{linhas}</Box>
     const abaixo = await next(e)
     if (!abaixo || (abaixo as { type?: string }).type === 'engine') return minha
