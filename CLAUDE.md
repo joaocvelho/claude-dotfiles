@@ -279,6 +279,11 @@ volumes: { dbdata: {} }
 
 Comandos econômicos: `docker compose up -d --build`, `docker compose logs --tail=100 app`, `docker compose ps`, `mvn -q -Dtest=ClasseTest test`.
 
+## Mods globais (todos os projetos e conversas, sem exceção)
+- Plugins `painel-tarefa` e `etapas` (marketplace `joao-mods`, escopo usuário) sempre ativos em toda sessão, terminal, desktop e VS Code.
+- Em toda tarefa com ação (mesmo de um passo só), chamar `mcp__etapas__etapa` ao planejar (concluidas=0) e ao concluir cada etapa, para a barra "Etapa N/total" com % e o alerta "Etapa concluída".
+- Cores do contexto no painel: verde até 450K, amarelo até 600K, vermelho acima. Sem compactação automática; `/compact` só manual.
+
 ## Padrões de entrega
 - Português BR, direto, sem preâmbulo nem conclusão decorativa.
 - Valide sempre com lint/build/teste antes de declarar pronto.
