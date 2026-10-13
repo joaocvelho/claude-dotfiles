@@ -9,7 +9,8 @@ const agentes = atom({ plugin: 'painel-tarefa', key: 'agentes' } as const, [])
 const tick = atom({ plugin: 'painel-tarefa', key: 'tick' } as const, 0)
 
 const VERDE = 300000
-const AMARELO = 600000
+const AMARELO = 550000
+const JANELA_5H = 5 * 60 * 60000
 const ETAPA = 'mcp__etapas__etapa'
 
 type Todo = { status: string }
@@ -28,7 +29,35 @@ export function duracao(ms: number) {
 }
 
 export function corContexto(tokens: number) {
-  return tokens >= AMARELO ? 'red' : tokens > VERDE ? 'yellow' : 'green'
+  return tokens > AMARELO ? 'red' : tokens > VERDE ? 'yellow' : 'green'
+}
+
+export function fatia(pct: number) {
+  const p = Math.max(0, Math.min(100, pct))
+  return p <= 0 ? '○' : p <= 25 ? '◔' : p <= 50 ? '◑' : p < 100 ? '◕' : '●'
+}
+
+export function pizzaSvg(pct: number, cor: string) {
+  const p = Math.max(0, Math.min(100, pct)) / 100
+  const fundo = '<circle cx="12" cy="12" r="10" fill="#8884" stroke="#8888" stroke-width="1"/>'
+  if (p >= 0.999) return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">${fundo}<circle cx="12" cy="12" r="10" fill="${cor}"/></svg>`
+  const ang = p * 2 * Math.PI
+  const x = (12 + 10 * Math.sin(ang)).toFixed(2)
+  const y = (12 - 10 * Math.cos(ang)).toFixed(2)
+  const arco = p > 0 ? `<path d="M12 12 L12 2 A10 10 0 ${p > 0.5 ? 1 : 0} 1 ${x} ${y} Z" fill="${cor}"/>` : ''
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">${fundo}${arco}</svg>`
+}
+
+export function janela(reset: string | null, pct5h: number | null, agora: number) {
+  const resta = reset ? Date.parse(reset) - agora : NaN
+  const valido = resta > 0 && resta <= JANELA_5H
+  return {
+    decorridoPct: valido ? Math.round(((JANELA_5H - resta) * 100) / JANELA_5H) : null,
+    decorrido: valido ? duracao(JANELA_5H - resta) : null,
+    restaPct: valido ? Math.round((resta * 100) / JANELA_5H) : null,
+    resta: valido ? duracao(resta) : null,
+    usado: pct5h === null ? null : Math.round(pct5h),
+  }
 }
 
 export function estimar(t: Tarefa, agora: number) {
@@ -197,7 +226,7 @@ export const register: Register = on => {
           <Text bold>{'Contexto '}</Text>
           {barra(pctCtx, cor)}
           <Text bold color={cor}>{` ${pctCtx}% ${k(u.tokens)}/${k(u.janela)}`}</Text>
-          {u.tokens >= AMARELO ? <Text color="red">{' ⚠ /compact'}</Text> : null}
+          {u.tokens > AMARELO ? <Text color="red">{' ⚠ /compact'}</Text> : null}
         </Box>,
       )
     }
@@ -217,17 +246,47 @@ export const register: Register = on => {
       </Box>,
     )
 
-    const resetMs = u && u.reset ? Date.parse(u.reset) - agora : NaN
-    const usado = u && u.pct5h !== null ? ` · ${Math.round(u.pct5h)}% usado` : ''
     linhas.push(
-      <Box key="rodape">
-        <Text color="blue">{`Modelo ${nomeModelo}`}</Text>
-        <Text dimColor>{' │ '}</Text>
-        <Text color={u && u.pct5h !== null && u.pct5h >= 80 ? 'red' : 'white'}>
-          {resetMs > 0 ? `Janela 5h expira em ${duracao(resetMs)}${usado}` : `Janela 5h: ${usado ? usado.slice(3) : 'sem leitura ainda'}`}
-        </Text>
+      <Box key="modelo">
+        <Text bold>{'Modelo   '}</Text>
+        <Text color="blue">{nomeModelo}</Text>
       </Box>,
     )
+
+    const j = janela(u ? u.reset : null, u ? u.pct5h : null, agora)
+    const corUso = j.usado === null ? '#6B7280' : j.usado >= 80 ? '#DC2626' : j.usado >= 50 ? '#D97706' : '#16A34A'
+    const pizzas = [
+      { id: 'janela', rotulo: 'Janela', pct: j.decorridoPct, valor: j.decorrido ? `${j.decorrido} de 5h` : 'sem leitura', cor: '#0891B2' },
+      { id: 'expira', rotulo: 'Expira em: ', pct: j.restaPct, valor: j.resta || 'sem leitura', cor: '#2563EB' },
+      { id: 'usado', rotulo: '% utilizado', pct: j.usado, valor: j.usado === null ? 'sem leitura' : `${j.usado}%`, cor: corUso },
+    ]
+    const corTexto = (hex: string) =>
+      hex === '#DC2626' ? 'red' : hex === '#D97706' ? 'yellow' : hex === '#16A34A' ? 'green' : hex === '#2563EB' ? 'blue' : hex === '#0891B2' ? 'cyan' : 'gray'
+
+    if (e.surface === 'desktop') {
+      const { Svg } = $.ui.resolve(e)
+      linhas.push(
+        <Box key="pizzas" flexDirection="row" gap={3}>
+          {pizzas.map(p => (
+            <Box key={`p-${p.id}`} flexDirection="row" gap={1} alignItems="center">
+              <Svg source={pizzaSvg(p.pct || 0, p.cor)} alt={`${p.rotulo} ${p.valor}`} width={24} height={24} />
+              <Text bold>{p.rotulo.replace(/: $/, ':')}</Text>
+              <Text color={corTexto(p.cor)}>{p.valor}</Text>
+            </Box>
+          ))}
+        </Box>,
+      )
+    } else {
+      linhas.push(
+        <Box key="pizzas">
+          {pizzas.map(p => [
+            <Text key={`g-${p.id}`} color={corTexto(p.cor)}>{`${fatia(p.pct || 0)} `}</Text>,
+            <Text key={`r-${p.id}`} bold>{p.rotulo.endsWith(': ') ? p.rotulo : `${p.rotulo} `}</Text>,
+            <Text key={`v-${p.id}`} color={corTexto(p.cor)}>{`${p.valor}   `}</Text>,
+          ])}
+        </Box>,
+      )
+    }
 
     const minha = <Box flexDirection="column">{linhas}</Box>
     const abaixo = await next(e)
