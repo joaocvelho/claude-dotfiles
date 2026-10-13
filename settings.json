@@ -3,23 +3,6 @@
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
   "model": "opus",
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/filter-test-output.sh"
-          },
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/limit-context.sh"
-          }
-        ]
-      }
-    ]
-  },
   "statusLine": {
     "type": "command",
     "command": "node C:/Users/joao.velho/.claude/statusline.js",
