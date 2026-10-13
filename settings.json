@@ -1,0 +1,39 @@
+{
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+  },
+  "model": "opus",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/filter-test-output.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/limit-context.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "node C:/Users/joao.velho/.claude/statusline.js",
+    "refreshInterval": 2
+  },
+  "autoCompactWindow": 450000,
+  "outputStyle": "Concise",
+  "language": "portuguese",
+  "effortLevel": "medium",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
+  "autoUpdatesChannel": "latest",
+  "theme": "dark-daltonized"
+}
