@@ -157,6 +157,7 @@ O padrão acima (JDK 8/Spring Boot/MySQL) é o **default da empresa**, não uma 
 
 ## Mods globais (todos os projetos e conversas, sem exceção)
 - Plugins `painel-tarefa` e `etapas` (marketplace `joao-mods`, escopo usuário) sempre ativos em toda sessão, terminal, desktop e VS Code.
+- `painel-tarefa` lê o limite de 5 h (Janela, Expira em, % utilizado) de `rateLimits` por `kind` ou rótulo; se mostrar "sem leitura", conferir o formato de `rateLimits` em `mods/painel-tarefa/hooks/register.tsx` (`paraUso`).
 - Em toda tarefa com ação (mesmo de um passo só), chamar `mcp__etapas__etapa` ao planejar (concluidas=0) e ao concluir cada etapa, para a barra "Etapa N/total" com % e o alerta "Etapa concluída".
 - Cores do contexto no painel: verde até 450K, amarelo até 600K, vermelho acima. Sem compactação automática; `/compact` só manual.
 
