@@ -73,7 +73,7 @@ export function estimar(t: Tarefa, agora: number) {
 }
 
 export function paraUso(tokens: number | undefined, janela: number, limites: readonly SessionRateLimit[]): Uso {
-  const cinco = limites.find(r => r.kind === 'five_hour')
+  const cinco = limites.find(r => /five.?hour|5.?h(our)?/i.test(String((r as any).kind || '') + ' ' + String((r as any).label || '')))
   return {
     tokens: tokens || 0,
     janela,
