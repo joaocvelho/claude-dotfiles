@@ -1,1 +1,1 @@
-{ "name": "etapas", "version": "0.5.0", "description": "Barra de etapas (etapa N/total), progresso em % e alerta \"Etapa concluída\".", "author": { "name": "Joao Velho" }, "types": "./types/index.d.ts" }
+{ "name": "etapas", "version": "0.5.1", "description": "Barra de etapas (etapa N/total), progresso em % e alerta \"Etapa concluída\".", "author": { "name": "Joao Velho" }, "types": "./types/index.d.ts" }

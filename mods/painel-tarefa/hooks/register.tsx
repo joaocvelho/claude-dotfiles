@@ -82,6 +82,16 @@ export function paraUso(tokens: number | undefined, janela: number, limites: rea
   }
 }
 
+export function mesclar(antes: Uso | null, novo: Uso): Uso {
+  if (!antes) return novo
+  return {
+    tokens: novo.tokens || antes.tokens,
+    janela: novo.janela || antes.janela,
+    reset: novo.reset || antes.reset,
+    pct5h: novo.pct5h === null ? antes.pct5h : novo.pct5h,
+  }
+}
+
 async function progresso($: EngineInterface, concluidas: number, total: number) {
   if (total <= 0) return
   await update($, tarefa, t => (t ? { ...(t as Tarefa), concluidas, total } : t))
@@ -89,7 +99,7 @@ async function progresso($: EngineInterface, concluidas: number, total: number) 
 
 async function medir($: EngineInterface) {
   const u = await $.session.usage()
-  await update($, uso, () => paraUso(u.context.tokens, u.context.window, u.rateLimits))
+  await update($, uso, antes => mesclar(antes as Uso | null, paraUso(u.context.tokens, u.context.window, u.rateLimits)))
 }
 
 async function atualizarAgentes($: EngineInterface) {
@@ -153,6 +163,15 @@ async function conteudo($: EngineInterface, surface: string, colunas: number, ta
         <Text dimColor>{` · ${estimar(t, agora)}`}</Text>
       </Box>,
     )
+  } else {
+    linhas.push(
+      <Box key="tarefa">
+        <Text bold>{'Tarefa   '}</Text>
+        {barra(0, 'cyan')}
+        <Text bold>{' 0%'}</Text>
+        <Text dimColor>{' · aguardando tarefa'}</Text>
+      </Box>,
+    )
   }
 
   if (u) {
@@ -166,6 +185,14 @@ async function conteudo($: EngineInterface, surface: string, colunas: number, ta
         {pizza('ctx', pctCtx, cor, `Contexto ${tokensTexto(u.tokens, u.janela)}`)}
         <Text bold color={cor}>{tokensTexto(u.tokens, u.janela)}</Text>
         {u.tokens > AMARELO ? <Text color="red">{' ⚠ /compact'}</Text> : null}
+      </Box>,
+    )
+  } else {
+    linhas.push(
+      <Box key="ctx">
+        <Text bold>{'Contexto '}</Text>
+        {barra(0, 'gray')}
+        <Text dimColor>{' sem leitura'}</Text>
       </Box>,
     )
   }
@@ -228,7 +255,7 @@ export const register: Register = on => {
   })
 
   on('session.measure', async ($, e, next) => {
-    await update($, uso, () => paraUso(e.context.tokens, e.context.window, e.rateLimits))
+    await update($, uso, antes => mesclar(antes as Uso | null, paraUso(e.context.tokens, e.context.window, e.rateLimits)))
     return next(e)
   })
 
@@ -236,7 +263,10 @@ export const register: Register = on => {
     tarefas.clear()
     const inicio = await $.clock.now()
     await update($, tarefa, () => ({ inicio, concluidas: 0, total: 0, ativa: true }))
-    await update($, agentes, atual => (atual as Agente[]).filter(a => a.ativo))
+    await update($, agentes, atual => {
+      const lista = atual as Agente[]
+      return [...lista.filter(a => !a.ativo).slice(-4), ...lista.filter(a => a.ativo)]
+    })
     return next(e)
   }).catch(($, e, next) => next(e))
 
@@ -320,7 +350,6 @@ export const register: Register = on => {
   })
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
-    if (e.props.hasSurvey) return next(e)
     const { Box } = $.ui.resolve(e)
     const linhas = await conteudo($, e.surface, e.props.bodyColumns, $.ui.resolve(e) as unknown as Tabela)
     const minha = <Box flexDirection="column">{linhas}</Box>

@@ -35,7 +35,7 @@ Reduzir consumo de tokens ao máximo **sem perder qualidade**: solução correta
 
 ## Isolamento com git worktree
 - Para qualquer subagente que **edita código** em múltiplos arquivos (`backend`, `frontend`, `full-stack`, `mobile`, `devops`, `ci-cd`, `ai-engineer`, `charts-dashboards`, `n8n`, `nginx`, `cypress`, `database-engineer`, `integration-tester`, `engenheiro-de-dados`, `python`, `desenvolvedor-ia`, `engenheiro-de-ia`, `mcp`, `skill`, `mods`, `generative-ia`, `ubuntu`, `mint`, `wsl2`, `sqlserver`, `oracle`, `postgresql`, `mysql`, `mariadb`, `k8s`, `iac`, `performance-tester`, `release-manager`, `dependency-auditor`), delegar com `isolation: worktree` no Agent tool — mantém a working tree principal limpa enquanto o subagente trabalha.
-- Subagentes somente-leitura (`architect`, `code-reviewer`, `cyber-security`, `quality-analyst` quando só roda teste, `specialist`, `business-analyst`, `product-owner`, `gherkin`, `orchestrator`, `doc-analyst`, `release-validator`, `tech-lead`, `gestor`, `engenheiro-software`, `analista-testes`, `ceo`, `coordenador-ti`, `gerente-ti`, `analista-de-dados`, `especialista-de-dados`, `gerente-ia`, `tech-lead-ia`, `arquiteto-de-ia`, `llm`) não precisam de worktree isolado.
+- Subagentes somente-leitura (`architect`, `code-reviewer`, `cyber-security`, `quality-analyst` quando só roda teste, `specialist`, `business-analyst`, `product-owner`, `gherkin`, `orchestrator`, `doc-analyst`, `release-validator`, `tech-lead`, `gestor`, `engenheiro-software`, `analista-testes`, `ceo`, `coordenador-ti`, `gerente-ti`, `analista-de-dados`, `especialista-de-dados`, `gerente-ia`, `tech-lead-ia`, `arquiteto-de-ia`, `llm`, `especialista-dba`, `tech-lead-dba`, `gerente-dba`, `diretor-banco-de-dados`, `gerente-auditoria`, `especialista-auditoria`, `auditor-impacto`, `tech-lead-auditor`) não precisam de worktree isolado.
 - Avalie a necessidade de worktree por projeto: repositórios pequenos/single-module podem não justificar isolamento; múltiplos subagentes editando em paralelo no mesmo repo sempre justificam.
 
 ## Subagentes globais (`~/.claude/agents/`)
@@ -107,6 +107,14 @@ Fluxo: `ceo`/`gerente-ti`/`coordenador-ti` (priorização, orçamento, cronogram
 | performance-tester | sonnet | Teste de carga (k6, JMeter, Gatling) |
 | release-manager | sonnet | SemVer, changelog, tags e release notes |
 | dependency-auditor | sonnet | CVEs e atualização de dependências (Boot 1.5.13/JDK 8) |
+| especialista-dba | sonnet | DBA hands-on (leitura): schema x entidade, índices, EXPLAIN, locks, charset, replicação, backup; delega SQL ao agente do dialeto |
+| tech-lead-dba | sonnet | Padrões de banco: revisa schema, migrações, índices e planos de execução; dá o veredito técnico de banco |
+| gerente-dba | haiku | Gestão de banco: janelas de mudança, SLAs, responsáveis (DBA/dev/DevOps) e dependências, em linguagem simples |
+| diretor-banco-de-dados | haiku | Visão executiva de banco: risco, capacidade, continuidade (backup/DR), conformidade e orçamento |
+| gerente-auditoria | haiku | Escopo, fontes e critérios da auditoria; consolida conforme x não conforme, riscos e decisões do usuário |
+| especialista-auditoria | sonnet | Rastreabilidade linha a linha diff/plano ↔ documento: EXIGIDO, ADIÇÃO, DIVERGÊNCIA, FALTANTE |
+| auditor-impacto | sonnet | O que trava ou quebra em homol/prod: config/profile, contrato, consumidores, ordem de deploy, rollback, segredos |
+| tech-lead-auditor | sonnet | Confere evidências e dá o veredito de conformidade (CONFORME / COM RESSALVAS / NÃO CONFORME) |
 
 ### Quando ativar subagentes especializados
 - **`ui-designer`**: quando a feature envolve prototipagem, wireframes ou design system (Excalidraw, mockups).
@@ -118,7 +126,8 @@ Fluxo: `ceo`/`gerente-ti`/`coordenador-ti` (priorização, orçamento, cronogram
 Acionar ao concluir uma feature/correção relevante, **antes de commit/push/MR** e sempre que o usuário pedir verificação completa. Todos somente leitura, em paralelo (`run_in_background`), sem worktree:
 - **Especialista** `specialist` (só se houver problema técnico difícil) · **Gestor** `gestor` · **Tech lead** `tech-lead` · **Arquiteto de software** `architect` · **Engenheiro de software** `engenheiro-software`
 - **QA** `quality-analyst` (roda os testes reais) · **Code review** `code-reviewer` · **Analista de testes** `analista-testes` · **Segurança** `cyber-security`
-- **Infra/observabilidade** (somente leitura, sem apply/alteração em cluster, Grafana ou banco): **Kubernetes/deploy** `k8s` · **Monitoramento/Grafana** `monitoramento` (logs de erro, LogQL, alertas, DLQ) · **CI/CD** `ci-cd` (pipeline roda os testes reais?) · **Banco** agente do dialeto (`mysql`, `sqlserver`, `oracle`, `postgresql`: schema x entidade, charset, timeouts, ações do DBA)
+- **Infra/observabilidade** (somente leitura, sem apply/alteração em cluster, Grafana ou banco): **Kubernetes/deploy** `k8s` · **Monitoramento/Grafana** `monitoramento` (logs de erro, LogQL, alertas, DLQ) · **CI/CD** `ci-cd` (pipeline roda os testes reais?) · **Banco** agente do dialeto (`mysql`, `sqlserver`, `oracle`, `postgresql`: schema x entidade, charset, timeouts, ações do DBA) e, quando o escopo toca banco, a cadeia DBA da seção "Banco de dados" abaixo (`especialista-dba` → `tech-lead-dba`; `gerente-dba`/`diretor-banco-de-dados` só para decisão, janela e risco)
+- **Auditoria (skill `auditoria`)**, obrigatória em projeto que afeta sistemas da empresa: antes de aprovar o plano e antes de commit/MR/GMUD, `especialista-auditoria` + `auditor-impacto` em paralelo e `tech-lead-auditor` no veredito; o documento de requisito prevalece sobre regra genérica e parecer de subagente (conflito = DIVERGÊNCIA para o usuário decidir); toda afirmação com `doc:linha`; fonte inacessível declarada na hora.
 - Ao final: `release-validator`. O agente principal consolida os pareceres (o `tech-lead` dá o veredito) e reporta ao usuário em português simples; correções só após aprovação do usuário.
 - Testes do ciclo: suíte real (Testcontainers MySQL 5.7/5.1) **e** teste ponta a ponta no banco local ou de homol via DBeaver (MySQL/SQL Server/Oracle/PostgreSQL), com `SELECT` antes/depois de cada inserção, atualização e exclusão; nunca em banco de produção.
 - Telas: conferir layout/design no sistema real (ex.: Air em HML) só em leitura, sem salvar/enviar nada, e manter o protótipo/implementação com o mesmo estilo visual.
@@ -133,6 +142,14 @@ Acionar sempre que a tarefa envolver deploy, build, pipeline ou mudança que toc
 5. **CI/CD**: pipeline (GitLab CI, GitHub Actions etc.) teria stages compatíveis com a mudança — se o `.yml` do pipeline precisa de ajuste, sinalizar antes de declarar pronto.
 6. **Compatibilidade homol/prod**: variáveis de ambiente usadas (não hardcoded), migrações de banco (Flyway/Liquibase) aplicáveis sem quebrar dado existente, sem mudança de contrato de API sem versionamento.
 Se qualquer item falhar, reportar a causa raiz e não declarar a tarefa concluída.
+
+## Banco de dados (skill `banco-de-dados`)
+Carregue a skill `banco-de-dados` (com `db-testing` e `sql-dialects`) em qualquer tarefa que envolva schema, migração, índice, query, charset, backup ou ambiente de banco. Cadeia de subagentes, todos **somente leitura** (sem worktree):
+- `especialista-dba` (análise hands-on): schema x entidade, índices, `EXPLAIN`, locks, charset/collation, timeouts, pool, replicação, backup. Executa só `SELECT`/`EXPLAIN`/`SHOW` em banco local ou de homol; o SQL específico do dialeto vem de `mysql`, `sqlserver`, `oracle`, `postgresql` ou `mariadb`.
+- `tech-lead-dba` (padrão e veredito): revisa o parecer do especialista, valida migração (Flyway/Liquibase), compatibilidade com a stack (MySQL 5.7/5.1, utf8mb4, `MySQL5Dialect`) e dá o veredito técnico de banco.
+- `gerente-dba` (gestão): janela de mudança, SLA, responsável (DBA/dev/DevOps/negócio), dependências e ordem de liberação, em linguagem simples.
+- `diretor-banco-de-dados` (executivo): risco, capacidade, continuidade (backup/DR), conformidade e orçamento; acionado só para mudança de alto risco, banco de produção ou decisão de custo.
+Fluxo: `especialista-dba` → `tech-lead-dba` → `gerente-dba` → `diretor-banco-de-dados` (os dois últimos só quando houver decisão). Regras fixas: nenhum deles executa DDL/DML nem toca banco de produção; DDL/DML em banco compartilhado, backup antes de alteração destrutiva e qualquer ação em homol pedem "sim" explícito do usuário; testes sempre reais, conferidos no DBeaver com `SELECT` antes/depois; seed de teste nunca contém `DROP` fora de container local próprio; senhas só por variável de ambiente.
 
 ## Regras por área (skill `referencia-areas`)
 Dados, IA, Linux, bancos, DevOps e dashboards: carregue a skill `referencia-areas` antes de trabalhar nessas áreas. Inalteradas aqui: ações destrutivas/de ambiente remoto, sudo, DDL/DML em banco compartilhado e backup antes de alteração destrutiva sempre pedem "sim" explícito; segredos só via variável de ambiente; testes sempre reais.
@@ -155,9 +172,18 @@ O padrão acima (JDK 8/Spring Boot/MySQL) é o **default da empresa**, não uma 
 ## Padrões de arquivos e mobile/BI (skill `referencia-projeto`)
 `application.properties`, `docker-compose.yml`, `Dockerfile`, Mobile e BI: carregue a skill `referencia-projeto`. Comandos: `docker compose up -d --build`, `docker compose logs --tail=100 app`, `mvn -q -Dtest=ClasseTest test`.
 
+### Dockerfile (regras fixas)
+- Imagem base vem da stack do projeto (Java 8 para `sydle-api`, Node 8 ou a versão já usada no `Dockerfile` para front); não trocar versão de imagem sem pedido explícito.
+- Build multi-stage quando houver ferramenta de build: a imagem final não carrega JDK/Maven/npm de build nem o código-fonte desnecessário.
+- Segredos (tokens, senhas) nunca em `ARG`, `ENV` ou `COPY` no Dockerfile: entram só por variável de ambiente em tempo de execução.
+- Validar com `docker compose up -d --build` e `docker compose ps` (container `Up`) antes de declarar pronto; `docker compose logs --tail=100 <servico>` para erro de start.
+- Alterar Dockerfile não dispara deploy nem push: build e push de imagem só pela pipeline, após "sim" explícito do usuário.
+
 ## Mods globais (todos os projetos e conversas, sem exceção)
-- Plugins `painel-tarefa` e `etapas` (marketplace `joao-mods`, escopo usuário) sempre ativos em toda sessão, terminal, desktop e VS Code.
+- Plugins `painel-tarefa` (0.3.4) e `etapas` (0.5.1), marketplace `joao-mods` (`claude-dotfiles\mods`), escopo usuário, sempre ativos em toda sessão, terminal, desktop e VS Code. Após atualizar, reiniciar o Claude Code para aplicar (`claude plugin update <plugin>@joao-mods`).
 - `painel-tarefa` lê o limite de 5 h (Janela, Expira em, % utilizado) de `rateLimits` por `kind` ou rótulo; se mostrar "sem leitura", conferir o formato de `rateLimits` em `mods/painel-tarefa/hooks/register.tsx` (`paraUso`).
+- Painel fixo: a faixa acima do prompt mantém todas as linhas (Tarefa, Contexto, Agentes, Modelo, pizzas) mesmo ociosa, com "aguardando tarefa" e "sem leitura" quando não há dado. Leituras vazias não apagam o último valor válido (`mesclar`). Agentes concluídos continuam listados. A faixa não some em `hasSurvey`, nem no painel nem na barra de etapas.
+- Testes dos mods: `claude plugin test <caminho-do-mod>` (painel-tarefa 7 testes, etapas 1 teste), sempre sem mock.
 - Em toda tarefa com ação (mesmo de um passo só), chamar `mcp__etapas__etapa` ao planejar (concluidas=0) e ao concluir cada etapa, para a barra "Etapa N/total" com % e o alerta "Etapa concluída".
 - Cores do contexto no painel: verde até 450K, amarelo até 600K, vermelho acima. Sem compactação automática; `/compact` só manual.
 
@@ -185,7 +211,7 @@ No início de um projeto novo (ou mudança grande), avaliar e propor ao usuário
 Decisão fica com `architect`/`orchestrator` no planejamento inicial; sinalizar a recomendação e aguardar confirmação antes de criar MCP ou skill novo (worktree pode ser decidido sem confirmação, é reversível).
 
 ## Skills (carregam sob demanda)
-`git-flow` (branches/PR/MR/commits/tags) · `ci-pipelines` (GitHub Actions/GitLab CI) · `k8s-deploy` (manifests) · `gherkin-bdd` (BDD) · `powerbi-dashboard` (DAX/dashboards) · `dataviz` (gráficos/paletas/painéis) · `n8n-workflows` (automações/integrações) · `nginx-config` (reverse proxy/TLS) · `cypress-e2e` (testes E2E) · `db-testing` (testes reais por banco) · `sql-dialects` (MySQL/Oracle/SQL Server/PostgreSQL).
+`git-flow` (branches/PR/MR/commits/tags) · `ci-pipelines` (GitHub Actions/GitLab CI) · `k8s-deploy` (manifests) · `gherkin-bdd` (BDD) · `powerbi-dashboard` (DAX/dashboards) · `dataviz` (gráficos/paletas/painéis) · `n8n-workflows` (automações/integrações) · `nginx-config` (reverse proxy/TLS) · `cypress-e2e` (testes E2E) · `db-testing` (testes reais por banco) · `sql-dialects` (MySQL/Oracle/SQL Server/PostgreSQL) · `banco-de-dados` (cadeia DBA: especialista, tech lead, gerente, diretor) · `auditoria` (conformidade doc ↔ diff e impacto homol/prod: gerente, especialista, auditor de impacto, tech lead auditor).
 
 ## MCP (usar só quando a tarefa exigir — cada um consome contexto)
 - `context7` — docs atualizadas de libs (preferir a websearch).

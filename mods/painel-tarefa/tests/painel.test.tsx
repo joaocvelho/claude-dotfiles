@@ -1,6 +1,6 @@
 import { expect, mock, test } from 'claude-code/testing'
 
-import { corContexto, duracao, estimar, fatia, janela, pizzaSvg, tokensTexto } from '../hooks/register'
+import { corContexto, duracao, estimar, fatia, janela, mesclar, pizzaSvg, tokensTexto } from '../hooks/register'
 
 const BAND = {
   component: 'AbovePrompt',
@@ -33,6 +33,23 @@ test('pizzas da janela de 5h', () => {
   expect([fatia(0), fatia(20), fatia(50), fatia(70), fatia(100)]).toEqual(['○', '◔', '◑', '◕', '●'])
   expect(pizzaSvg(25, '#2563EB')).toContain('A10 10 0 0 1 22.00 12.00')
   expect(pizzaSvg(100, '#2563EB')).toContain('fill="#2563EB"')
+})
+
+test('leitura sem dados mantém os últimos valores', () => {
+  const antes = { tokens: 300000, janela: 1000000, reset: '2026-10-19T20:00:00Z', pct5h: 40 }
+  expect(mesclar(antes, { tokens: 0, janela: 0, reset: null, pct5h: null })).toEqual(antes)
+  expect(mesclar(antes, { tokens: 310000, janela: 1000000, reset: null, pct5h: 45 })).toEqual({ ...antes, tokens: 310000, pct5h: 45 })
+  expect(mesclar(null, { tokens: 0, janela: 0, reset: null, pct5h: null }).reset).toBe(null)
+})
+
+test('faixa ociosa mostra todas as linhas', async ($, on) => {
+  mock.clock(on, { now: 0 })
+  on('ui.render', () => ({ type: 'engine', ref: 0 }) as never)
+  on('session.model', () => ({ value: 'claude-opus-5-5' }) as never)
+  const ui = await $.ui.mount({ plugin: 'painel-tarefa', surface: 'terminal', ...BAND, props: { ...BAND.props, isWorking: false, hasSurvey: true } })
+  expect(await ui.find({ type: 'Text', text: ' · aguardando tarefa' })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: ' sem leitura' })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: 'Modelo   ' })).toBeDefined()
 })
 
 test('faixa mostra tarefa, contexto, agentes, modelo e as três pizzas', async ($, on) => {

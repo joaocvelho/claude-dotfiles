@@ -172,8 +172,6 @@ export const register: Register = on => {
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const p = ((await read($, progresso)) as Etapas | null) || VAZIO
-    if (e.props.hasSurvey) return next(e)
-
     const { Box } = $.ui.resolve(e)
     const minha = bloco(p, e.props.bodyColumns, $.ui.resolve(e) as unknown as Tabela)
 

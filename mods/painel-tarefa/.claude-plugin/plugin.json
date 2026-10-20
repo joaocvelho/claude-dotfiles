@@ -1,1 +1,1 @@
-{ "name": "painel-tarefa", "version": "0.3.3", "description": "Faixa acima do prompt: progresso da tarefa, contexto colorido, estimativa de tempo, modelo, janela de 5h e subagentes.", "author": { "name": "Joao Velho" }, "types": "./types/index.d.ts" }
+﻿{ "name": "painel-tarefa", "version": "0.3.4", "description": "Faixa acima do prompt: progresso da tarefa, contexto colorido, estimativa de tempo, modelo, janela de 5h e subagentes.", "author": { "name": "Joao Velho" }, "types": "./types/index.d.ts" }
