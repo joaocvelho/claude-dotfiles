@@ -97,6 +97,10 @@ async function progresso($: EngineInterface, concluidas: number, total: number) 
   await update($, tarefa, t => (t ? { ...(t as Tarefa), concluidas, total } : t))
 }
 
+export function aposCompact(antes: Uso | null): Uso | null {
+  return antes ? { ...antes, tokens: 0 } : antes
+}
+
 async function medir($: EngineInterface) {
   const u = await $.session.usage()
   await update($, uso, antes => mesclar(antes as Uso | null, paraUso(u.context.tokens, u.context.window, u.rateLimits)))
@@ -257,6 +261,12 @@ export const register: Register = on => {
   on('session.measure', async ($, e, next) => {
     await update($, uso, antes => mesclar(antes as Uso | null, paraUso(e.context.tokens, e.context.window, e.rateLimits)))
     return next(e)
+  })
+
+  on('session.compact', async ($, e, next) => {
+    const r = await next(e)
+    if (!e.agentId && !('skip' in r && r.skip)) await update($, uso, antes => aposCompact(antes as Uso | null))
+    return r
   })
 
   on('prompt.submit', async ($, e, next) => {

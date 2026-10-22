@@ -180,12 +180,12 @@ O padrão acima (JDK 8/Spring Boot/MySQL) é o **default da empresa**, não uma 
 - Alterar Dockerfile não dispara deploy nem push: build e push de imagem só pela pipeline, após "sim" explícito do usuário.
 
 ## Mods globais (todos os projetos e conversas, sem exceção)
-- Plugins `painel-tarefa` (0.3.4) e `etapas` (0.5.1), marketplace `joao-mods` (`claude-dotfiles\mods`), escopo usuário, sempre ativos em toda sessão, terminal, desktop e VS Code. Após atualizar, reiniciar o Claude Code para aplicar (`claude plugin update <plugin>@joao-mods`).
+- Plugins `painel-tarefa` (0.3.6) e `etapas` (0.5.1), marketplace `joao-mods` (`claude-dotfiles\mods`), escopo usuário, sempre ativos em toda sessão, terminal, desktop e VS Code. Após atualizar, reiniciar o Claude Code para aplicar (`claude plugin update <plugin>@joao-mods`).
 - `painel-tarefa` lê o limite de 5 h (Janela, Expira em, % utilizado) de `rateLimits` por `kind` ou rótulo; se mostrar "sem leitura", conferir o formato de `rateLimits` em `mods/painel-tarefa/hooks/register.tsx` (`paraUso`).
 - Painel fixo: a faixa acima do prompt mantém todas as linhas (Tarefa, Contexto, Agentes, Modelo, pizzas) mesmo ociosa, com "aguardando tarefa" e "sem leitura" quando não há dado. Leituras vazias não apagam o último valor válido (`mesclar`). Agentes concluídos continuam listados. A faixa não some em `hasSurvey`, nem no painel nem na barra de etapas.
-- Testes dos mods: `claude plugin test <caminho-do-mod>` (painel-tarefa 7 testes, etapas 1 teste), sempre sem mock.
+- Testes dos mods: `claude plugin test <caminho-do-mod>` (painel-tarefa 8 testes, etapas 1 teste), sempre sem mock.
 - Em toda tarefa com ação (mesmo de um passo só), chamar `mcp__etapas__etapa` ao planejar (concluidas=0) e ao concluir cada etapa, para a barra "Etapa N/total" com % e o alerta "Etapa concluída".
-- Cores do contexto no painel: verde até 450K, amarelo até 600K, vermelho acima. Sem compactação automática; `/compact` só manual.
+- Cores do contexto no painel: verde até 450K, amarelo até 600K, vermelho acima. Sem compactação automática; `/compact` só manual. Ao compactar (hook `session.compact`, manual ou automático, só conversa principal), o painel zera o contexto na hora (`aposCompact` em `mods/painel-tarefa/hooks/register.tsx`); o valor real volta no próximo turno, porque o engine só reporta o preenchimento depois de uma resposta da janela nova. Vale para toda janela de conversa, pois o plugin é lido de `claude-dotfiles\mods`.
 
 ## Padrões de entrega
 - Português BR, direto, sem preâmbulo nem conclusão decorativa.

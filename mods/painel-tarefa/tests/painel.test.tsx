@@ -1,6 +1,6 @@
 import { expect, mock, test } from 'claude-code/testing'
 
-import { corContexto, duracao, estimar, fatia, janela, mesclar, pizzaSvg, tokensTexto } from '../hooks/register'
+import { aposCompact, corContexto, duracao, estimar, fatia, janela, mesclar, pizzaSvg, tokensTexto } from '../hooks/register'
 
 const BAND = {
   component: 'AbovePrompt',
@@ -97,6 +97,13 @@ test('faixa mostra tarefa, contexto, agentes, modelo e as três pizzas', async (
   expect(await painel.find({ type: 'Text', text: 'claude-opus-5-5' })).toBeDefined()
   expect(await painel.findAll({ type: 'Svg' })).toHaveLength(4)
   await painel.unmount()
+})
+
+test('após compactar zera o contexto e preserva janela e limite de 5h', () => {
+  const antes = { tokens: 650000, janela: 1000000, reset: '2026-10-22T15:00:00Z', pct5h: 40 }
+  expect(aposCompact(antes)).toEqual({ ...antes, tokens: 0 })
+  expect(aposCompact(null)).toBeNull()
+  expect(mesclar(aposCompact(antes), { tokens: 80000, janela: 1000000, reset: null, pct5h: null }).tokens).toBe(80000)
 })
 
 test('tokens no formato do contexto', () => {
