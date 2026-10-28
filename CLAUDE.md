@@ -189,6 +189,7 @@ O padrão acima (JDK 8/Spring Boot/MySQL) é o **default da empresa**, não uma 
 
 ## Padrões de entrega
 - Português BR, direto, sem preâmbulo nem conclusão decorativa.
+- **Escopo pelos documentos do projeto**: obedecer somente às regras dos documentos de requisito/planejamento do projeto. Não fazer deduções nem sugestões fora do escopo dessas regras e não propor alterar o escopo das regras (ex.: reescrever checklist), para não quebrar em homol/prod/deploy. Ponto sem cobertura nos documentos é só reportado, com `doc:linha`, sem recomendação de mudança.
 - Valide sempre com lint/build/teste antes de declarar pronto.
 - Sem comentários no código, sem emojis, sem arquivos/docs novos não pedidos.
 - Raciocínio interno enxuto: pense em tópicos curtos, só o necessário para decidir; não re-derive o já estabelecido nem narre alternativas descartadas.
