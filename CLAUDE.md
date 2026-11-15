@@ -34,7 +34,7 @@ Reduzir consumo de tokens ao máximo **sem perder qualidade**: solução correta
 - Detalhes: skill `db-testing` (compose/Testcontainers/profiles) e `sql-dialects` (dialetos). Quem escreve esses testes é o subagente `integration-tester` (sempre teste real, nunca mock); schema/SQL por dialeto é `database-engineer`.
 
 ## Isolamento com git worktree
-- Para qualquer subagente que **edita código** em múltiplos arquivos (`backend`, `frontend`, `full-stack`, `mobile`, `devops`, `ci-cd`, `ai-engineer`, `charts-dashboards`, `n8n`, `nginx`, `cypress`, `database-engineer`, `integration-tester`, `engenheiro-de-dados`, `python`, `desenvolvedor-ia`, `engenheiro-de-ia`, `mcp`, `skill`, `mods`, `generative-ia`, `ubuntu`, `mint`, `wsl2`, `sqlserver`, `oracle`, `postgresql`, `mysql`, `mariadb`, `k8s`, `iac`, `performance-tester`, `release-manager`, `dependency-auditor`), delegar com `isolation: worktree` no Agent tool — mantém a working tree principal limpa enquanto o subagente trabalha.
+- Para qualquer subagente que **edita código** em múltiplos arquivos (`backend`, `frontend`, `full-stack`, `mobile`, `devops`, `ci-cd`, `ai-engineer`, `charts-dashboards`, `n8n`, `nginx`, `cypress`, `database-engineer`, `integration-tester`, `engenheiro-de-dados`, `python`, `desenvolvedor-ia`, `engenheiro-de-ia`, `mcp`, `skill`, `mods`, `generative-ia`, `canvas`, `ubuntu`, `mint`, `wsl2`, `sqlserver`, `oracle`, `postgresql`, `mysql`, `mariadb`, `k8s`, `iac`, `performance-tester`, `release-manager`, `dependency-auditor`), delegar com `isolation: worktree` no Agent tool — mantém a working tree principal limpa enquanto o subagente trabalha.
 - Subagentes somente-leitura (`architect`, `code-reviewer`, `cyber-security`, `quality-analyst` quando só roda teste, `specialist`, `business-analyst`, `product-owner`, `gherkin`, `orchestrator`, `doc-analyst`, `release-validator`, `tech-lead`, `gestor`, `engenheiro-software`, `analista-testes`, `ceo`, `coordenador-ti`, `gerente-ti`, `analista-de-dados`, `especialista-de-dados`, `gerente-ia`, `tech-lead-ia`, `arquiteto-de-ia`, `llm`) não precisam de worktree isolado.
 - Avalie a necessidade de worktree por projeto: repositórios pequenos/single-module podem não justificar isolamento; múltiplos subagentes editando em paralelo no mesmo repo sempre justificam.
 
@@ -76,6 +76,7 @@ Fluxo: `ceo`/`gerente-ti`/`coordenador-ti` (priorização, orçamento, cronogram
 | coordenador-ti | haiku | Coordenação de cronograma e equipes |
 | database-engineer | sonnet | Modelagem comum entre bancos; delega SQL ao agente do banco-alvo |
 | charts-dashboards | sonnet | Dashboards web, gráficos 2D/3D, Power BI e Tableau |
+| canvas | sonnet | HTML5 Canvas, Konva, Fabric.js, quadro branco e diagramas interativos |
 | n8n | sonnet | Workflows e integrações n8n |
 | nginx | sonnet | Reverse proxy, TLS e config Nginx |
 | cypress | sonnet | Testes E2E com Cypress contra backend e banco reais |
@@ -170,6 +171,7 @@ O padrão acima (JDK 8/Spring Boot/MySQL) é o **default da empresa**, não uma 
 
 ## Skills globais por tipo de trabalho
 - **Visualização e BI**: `dataviz` (gráficos, dashboards, cores, acessibilidade) — SEMPRE ler antes de criar chart/dashboard.
+- **Canvas**: `canvas` (HTML5 Canvas/Konva/Fabric, quadro branco, editor visual) — ler antes de codificar desenho em canvas. Divisão: gráfico de dados = `charts-dashboards`; wireframe/mockup = `ui-designer`; desenho e interação livre = `canvas`. Render sob demanda (RAM 8 GB), `devicePixelRatio`, pointer events, libs com versão fixa.
 - **Design e diagramas**: `artifact-diagramming` (SVG, diagramas legíveis em modo claro/escuro), `artifact-design` (antes de qualquer artifact).
 - **Documentos Office**: `pdf`, `xlsx`, `pptx` (leitura e criação de relatórios, planilhas, apresentações).
 - **Qualidade de código**: `code-review` (diff, PR, --fix), `simplify` (refactor de reuso/eficiência).
@@ -185,7 +187,7 @@ No início de um projeto novo (ou mudança grande), avaliar e propor ao usuário
 Decisão fica com `architect`/`orchestrator` no planejamento inicial; sinalizar a recomendação e aguardar confirmação antes de criar MCP ou skill novo (worktree pode ser decidido sem confirmação, é reversível).
 
 ## Skills (carregam sob demanda)
-`git-flow` (branches/PR/MR/commits/tags) · `ci-pipelines` (GitHub Actions/GitLab CI) · `k8s-deploy` (manifests) · `gherkin-bdd` (BDD) · `powerbi-dashboard` (DAX/dashboards) · `dataviz` (gráficos/paletas/painéis) · `n8n-workflows` (automações/integrações) · `nginx-config` (reverse proxy/TLS) · `cypress-e2e` (testes E2E) · `db-testing` (testes reais por banco) · `sql-dialects` (MySQL/Oracle/SQL Server/PostgreSQL).
+`git-flow` (branches/PR/MR/commits/tags) · `ci-pipelines` (GitHub Actions/GitLab CI) · `k8s-deploy` (manifests) · `gherkin-bdd` (BDD) · `powerbi-dashboard` (DAX/dashboards) · `dataviz` (gráficos/paletas/painéis) · `canvas` (HTML5 Canvas/Konva/Fabric) · `n8n-workflows` (automações/integrações) · `nginx-config` (reverse proxy/TLS) · `cypress-e2e` (testes E2E) · `db-testing` (testes reais por banco) · `sql-dialects` (MySQL/Oracle/SQL Server/PostgreSQL).
 
 ## MCP (usar só quando a tarefa exigir — cada um consome contexto)
 - `context7` — docs atualizadas de libs (preferir a websearch).
