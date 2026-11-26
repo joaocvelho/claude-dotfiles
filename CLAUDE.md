@@ -3,6 +3,19 @@
 ## Objetivo
 Reduzir consumo de tokens ao máximo **sem perder qualidade**: solução correta na primeira vez, fix mínimo, zero retrabalho. Menor caminho que resolve o problema = melhor resposta.
 
+## Regras de todo projeto (obrigatórias, valem para TODO projeto criado ou trabalhado)
+Detalhe operacional nas skills `regras-projeto` (início de projeto e checklist) e `verificacao-ponta-a-ponta` (cadeia de subagentes).
+1. **Ler antes todos os documentos do projeto** (requisitos, especificações, planejamento, resumo, pendências, mapa) antes de planejar ou editar; para busca, usar a skill `rag-documentos` (índice local, `doc:linha`).
+2. **Obedecer sempre as regras dos documentos**: o documento prevalece sobre regra genérica, preferência técnica e parecer de subagente; conflito = DIVERGÊNCIA para o usuário decidir.
+3. **Nunca inventar valores**: usar só valores dos documentos, do seed/fixture do projeto, do ambiente real ou informados pelo usuário; faltou valor, perguntar.
+4. **Nunca ter alucinações**: toda afirmação com evidência (`arquivo:linha`, `doc:linha`, saída de comando); sem evidência = INFERÊNCIA ou NÃO VERIFICÁVEL.
+5. **Não tirar conclusões com dúvida: perguntar ao usuário** (AskUserQuestion) em vez de supor.
+6. **Sempre verificar, antes e depois, se não vai quebrar em homol / deploy / prod**, só em leitura; nunca tocar nesses ambientes sem "sim" explícito.
+7. **Sempre fazer testes reais contra MySQL, conferidos no DBeaver** (ou no MCP `mysql-leitura`, só SELECT/EXPLAIN/SHOW); nunca testes mockados. Quando o documento disser que não há banco no escopo, registrar "não se aplica" com `doc:linha`.
+8. **Sempre acionar subagentes para verificar e validar todo o fluxo de ponta a ponta** (skill `verificacao-ponta-a-ponta`), com matriz regra → teste real; regra sem teste é LACUNA reportada.
+9. **Criar subagentes quando necessário**, em todos os níveis de especialidade (gerente, coordenador, especialista, auditor, tech-lead, arquiteto), seguindo o padrão de `~/.claude/agents/`.
+10. **Sempre ser objetivo, realista e assertivo**: recomendação única por decisão, sem rodeio e sem promessa sem evidência.
+
 ## Regras de economia de tokens (obrigatórias)
 1. **Leitura seletiva**: localize com `grep`/`glob` antes de ler; leia só o trecho (offset/limit, ~50-100 linhas). Nunca leia um arquivo inteiro sem necessidade clara.
 2. **Nunca injete logs/builds inteiros no contexto**: `--tail=N`, `| Select-Object -Last 50`, `head`/`tail`, filtros por nível de erro. Saída de comando sempre truncada.
@@ -74,6 +87,9 @@ Fluxo: `ceo`/`gerente-ti`/`coordenador-ti` (priorização, orçamento, cronogram
 | ceo | haiku | Visão estratégica, prioridade e orçamento |
 | gerente-ti | haiku | Gestão de TI: recursos, prazos e riscos |
 | coordenador-ti | haiku | Coordenação de cronograma e equipes |
+| gerente-projeto | haiku | Escopo do documento x entregue, marcos, dependências, riscos homol/prod e decisões pendentes (leitura) |
+| coordenador-projeto | haiku | Sequência de merge/deploy, checklist de stage, handoffs e pré-requisitos de cada etapa (leitura) |
+| especialista-sistema | sonnet | Integração ponta a ponta entre sistemas: contrato, autenticação, config por profile, charset, compatibilidade de branches (leitura) |
 | database-engineer | sonnet | Modelagem comum entre bancos; delega SQL ao agente do banco-alvo |
 | charts-dashboards | sonnet | Dashboards web, gráficos 2D/3D, Power BI e Tableau |
 | n8n | sonnet | Workflows e integrações n8n |
@@ -115,6 +131,13 @@ Fluxo: `ceo`/`gerente-ti`/`coordenador-ti` (priorização, orçamento, cronogram
 | especialista-auditoria | sonnet | Rastreabilidade linha a linha diff/plano ↔ documento: EXIGIDO, ADIÇÃO, DIVERGÊNCIA, FALTANTE |
 | auditor-impacto | sonnet | O que trava ou quebra em homol/prod: config/profile, contrato, consumidores, ordem de deploy, rollback, segredos |
 | tech-lead-auditor | sonnet | Confere evidências e dá o veredito de conformidade (CONFORME / COM RESSALVAS / NÃO CONFORME) |
+| gerente-qualidade / coordenador-qualidade | haiku | Gestão e sequência dos testes reais: cobertura regra → teste, pré-requisitos, evidências (leitura) |
+| especialista-qa / auditor-qualidade / tech-lead-qa | sonnet | Matriz regra → teste real → evidência no banco; auditoria de prova (mock = inválida); veredito de qualidade (leitura) |
+| gerente-seguranca / arquiteto-seguranca / auditor-seguranca / tech-lead-seguranca | haiku / sonnet | Riscos e GMUD; desenho de autenticação e segredos; auditoria de segredos/logs; veredito de segurança (leitura) |
+| especialista-frontend / tech-lead-frontend | sonnet | Verificação client-side ponta a ponta (Node 8) e veredito de frontend (leitura) |
+| especialista-backend / tech-lead-backend | sonnet | Verificação server-side ponta a ponta (JDK 8/Boot 1.5) e veredito de backend (leitura) |
+| gerente-devops / especialista-devops / tech-lead-devops | haiku / sonnet | Ordem de liberação e rollback; Dockerfile, pipeline e config por ambiente; veredito de deploy (leitura) |
+| arquiteto-dados | sonnet | Modelo, fluxo e consistência de dados entre sistemas (leitura) |
 
 ### Quando ativar subagentes especializados
 - **`ui-designer`**: quando a feature envolve prototipagem, wireframes ou design system (Excalidraw, mockups).
@@ -125,6 +148,7 @@ Fluxo: `ceo`/`gerente-ti`/`coordenador-ti` (priorização, orçamento, cronogram
 ### Verificação completa do ciclo (ponta a ponta, do início ao fim)
 Acionar ao concluir uma feature/correção relevante, **antes de commit/push/MR** e sempre que o usuário pedir verificação completa. Todos somente leitura, em paralelo (`run_in_background`), sem worktree:
 - **Especialista** `specialist` (só se houver problema técnico difícil) · **Gestor** `gestor` · **Tech lead** `tech-lead` · **Arquiteto de software** `architect` · **Engenheiro de software** `engenheiro-software`
+- **Gerente de projeto** `gerente-projeto` · **Coordenador de projeto** `coordenador-projeto` · **Especialista em sistema** `especialista-sistema` · **Engenheiro de dados** `engenheiro-de-dados` (em verificação, só leitura: dados gravados, volume e consistência no banco)
 - **QA** `quality-analyst` (roda os testes reais) · **Code review** `code-reviewer` · **Analista de testes** `analista-testes` · **Segurança** `cyber-security`
 - **Infra/observabilidade** (somente leitura, sem apply/alteração em cluster, Grafana ou banco): **Kubernetes/deploy** `k8s` · **Monitoramento/Grafana** `monitoramento` (logs de erro, LogQL, alertas, DLQ) · **CI/CD** `ci-cd` (pipeline roda os testes reais?) · **Banco** agente do dialeto (`mysql`, `sqlserver`, `oracle`, `postgresql`: schema x entidade, charset, timeouts, ações do DBA) e, quando o escopo toca banco, a cadeia DBA da seção "Banco de dados" abaixo (`especialista-dba` → `tech-lead-dba`; `gerente-dba`/`diretor-banco-de-dados` só para decisão, janela e risco)
 - **Auditoria (skill `auditoria`)**, obrigatória em projeto que afeta sistemas da empresa: antes de aprovar o plano e antes de commit/MR/GMUD, `especialista-auditoria` + `auditor-impacto` em paralelo e `tech-lead-auditor` no veredito; o documento de requisito prevalece sobre regra genérica e parecer de subagente (conflito = DIVERGÊNCIA para o usuário decidir); toda afirmação com `doc:linha`; fonte inacessível declarada na hora.
@@ -214,7 +238,13 @@ Decisão fica com `architect`/`orchestrator` no planejamento inicial; sinalizar 
 ## Skills (carregam sob demanda)
 `git-flow` (branches/PR/MR/commits/tags) · `ci-pipelines` (GitHub Actions/GitLab CI) · `k8s-deploy` (manifests) · `gherkin-bdd` (BDD) · `powerbi-dashboard` (DAX/dashboards) · `dataviz` (gráficos/paletas/painéis) · `n8n-workflows` (automações/integrações) · `nginx-config` (reverse proxy/TLS) · `cypress-e2e` (testes E2E) · `db-testing` (testes reais por banco) · `sql-dialects` (MySQL/Oracle/SQL Server/PostgreSQL) · `banco-de-dados` (cadeia DBA: especialista, tech lead, gerente, diretor) · `auditoria` (conformidade doc ↔ diff e impacto homol/prod: gerente, especialista, auditor de impacto, tech lead auditor).
 
+## Skills de regras e RAG
+- `regras-projeto`: regras de todo projeto e checklist de início (carregar no início de toda tarefa com ação). As demais skills têm o bloco "Regras de todo projeto" mesclado no fim.
+- `verificacao-ponta-a-ponta`: cadeia de subagentes por nível e consolidação do veredito.
+- `rag-documentos`: busca local BM25 nos documentos do projeto (`rag.py`, sem rede), com `doc:linha`.
+
 ## MCP (usar só quando a tarefa exigir — cada um consome contexto)
+- `mysql-leitura` — MySQL só leitura para conferir testes reais (SELECT/SHOW/EXPLAIN/DESCRIBE em transação READ ONLY; bloqueia DDL/DML e host com "prod"/"prd"; só hosts de `MYSQL_LEITURA_HOSTS_PERMITIDOS`, padrão localhost). Credenciais só por variável de ambiente (`MYSQL_LEITURA_HOST`, `_PORT`, `_USER`, `_PASSWORD`, `_DATABASE`). Servidor em `claude-dotfiles\mcp\mysql-leitura\server.py`; requer `pymysql` (instalado). Padrão: MySQL 5.7 local em Docker (subir com `docker compose up -d db` quando necessário), a mesma conexão do DBeaver; a porta do container do projeto vem de `docker ps` e vai no parâmetro `porta` (e `base`) de cada chamada.
 - `context7` — docs atualizadas de libs (preferir a websearch).
 - `playwright` — testar UI no navegador (QA/E2E).
 - `kubernetes` — operar cluster (kubectl via MCP).

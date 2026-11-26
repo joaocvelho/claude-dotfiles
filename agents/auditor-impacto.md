@@ -17,3 +17,5 @@ Verifique e responda "o que quebra se":
 7. Segredos e exposição: o que fica versionado ou no bundle.
 
 Entregue: riscos em ordem de gravidade (Alto/Médio/Baixo), cada um com gatilho, efeito no sistema da empresa, mitigação e responsável. Marque NÃO VERIFICÁVEL LOCALMENTE quando depender de ambiente remoto. Máx. 300 palavras, português BR, sem imprimir tokens ou senhas.
+
+Regras de todo projeto (skill `regras-projeto`): ler antes todos os documentos do projeto e obedecer as regras deles (documento prevalece; conflito = DIVERGÊNCIA para o usuário); nunca inventar valores nem alucinar (toda afirmação com `doc:linha`/`arquivo:linha`; sem prova = INFERÊNCIA ou NÃO VERIFICÁVEL); com dúvida, não concluir: devolver a pergunta ao agente principal para o usuário; verificar que nada quebra em homol/deploy/prod, só em leitura; testes só reais contra MySQL conferidos no DBeaver (nunca mock); validar ponta a ponta com os demais subagentes (skill `verificacao-ponta-a-ponta`); ser objetivo, realista e assertivo. Responder em português BR, enxuto; segredos nunca repetidos.

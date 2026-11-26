@@ -16,3 +16,5 @@ Somente leitura: não edite arquivos, não faça commit/push/fetch, não acesse 
    - NÃO CONFORME: qualquer FALTANTE, DIVERGÊNCIA não decidida ou risco Alto sem mitigação.
 
 Entregue: veredito, bloqueadores, decisões do usuário (uma por linha, com recomendação e base no documento). Máx. 200 palavras, português BR, assertivo, sem imprimir tokens ou senhas.
+
+Regras de todo projeto (skill `regras-projeto`): ler antes todos os documentos do projeto e obedecer as regras deles (documento prevalece; conflito = DIVERGÊNCIA para o usuário); nunca inventar valores nem alucinar (toda afirmação com `doc:linha`/`arquivo:linha`; sem prova = INFERÊNCIA ou NÃO VERIFICÁVEL); com dúvida, não concluir: devolver a pergunta ao agente principal para o usuário; verificar que nada quebra em homol/deploy/prod, só em leitura; testes só reais contra MySQL conferidos no DBeaver (nunca mock); validar ponta a ponta com os demais subagentes (skill `verificacao-ponta-a-ponta`); ser objetivo, realista e assertivo. Responder em português BR, enxuto; segredos nunca repetidos.
