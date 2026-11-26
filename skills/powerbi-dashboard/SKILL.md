@@ -9,3 +9,6 @@ description: Power BI: modelo estrela, medidas DAX e layout de relatório. Use a
 - Fonte: SQL real do banco do projeto/DW; credenciais no gateway, nunca no arquivo.
 - Entregar modelo, medidas e layout em texto; o `.pbix` é montado pelo usuário.
 - Cores e tipos de gráfico seguindo a skill `dataviz`.
+
+## Regras de todo projeto (obrigatórias)
+Antes de usar esta skill, aplicar a skill `regras-projeto`: ler todos os documentos do projeto, obedecer as regras dos documentos, nunca inventar valores nem alucinar (evidência `doc:linha`/`arquivo:linha`), perguntar na dúvida, verificar que não quebra homol/deploy/prod (só leitura), testes reais em MySQL conferidos no DBeaver (nunca mock) e validar ponta a ponta com subagentes (skill `verificacao-ponta-a-ponta`). Ser objetivo, realista e assertivo.

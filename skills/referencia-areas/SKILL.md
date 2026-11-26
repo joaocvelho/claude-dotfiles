@@ -77,3 +77,5 @@ description: Regras por área: dados (ETL, análise, Python), IA/LLM, Linux (Ubu
 - **Tableau**: sem skill própria. Entregar campos calculados, filtros e layout em texto; o workbook é montado pelo usuário no Tableau.
 - **Validação**: build do projeto e verificação visual no navegador quando for web (`playwright` só se necessário). Sem arquivos de documentação extras.
 
+## Regras de todo projeto (obrigatórias)
+Antes de usar esta skill, aplicar a skill `regras-projeto`: ler todos os documentos do projeto, obedecer as regras dos documentos, nunca inventar valores nem alucinar (evidência `doc:linha`/`arquivo:linha`), perguntar na dúvida, verificar que não quebra homol/deploy/prod (só leitura), testes reais em MySQL conferidos no DBeaver (nunca mock) e validar ponta a ponta com subagentes (skill `verificacao-ponta-a-ponta`). Ser objetivo, realista e assertivo.

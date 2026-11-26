@@ -16,3 +16,6 @@ description: Padrões de HTML5 Canvas, Konva e Fabric.js — setup com devicePix
 - Tema: cores de tokens CSS lidas com `getComputedStyle`; redesenhar em mudança de `prefers-color-scheme`.
 - Exportar: `canvas.toBlob` (PNG) e `JSON.stringify(modelo)`; importar valida o esquema antes de desenhar.
 - Libs via CDN com versão exata (ex.: `konva@9.3.6`, `fabric@5.3.0`), nunca `@latest`.
+
+## Regras de todo projeto (obrigatórias)
+Antes de usar esta skill, aplicar a skill `regras-projeto`: ler todos os documentos do projeto, obedecer as regras dos documentos, nunca inventar valores nem alucinar (evidência `doc:linha`/`arquivo:linha`), perguntar na dúvida, verificar que não quebra homol/deploy/prod (só leitura), testes reais em MySQL conferidos no DBeaver (nunca mock) e validar ponta a ponta com subagentes (skill `verificacao-ponta-a-ponta`). Ser objetivo, realista e assertivo.

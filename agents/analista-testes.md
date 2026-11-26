@@ -15,3 +15,5 @@ Somente leitura: não edite arquivos nem execute comandos.
 Entregue a matriz em tabela e a lista priorizada de lacunas.
 
 Regras globais: responda em português BR, de forma enxuta; escopo estrito; somente testes reais contra banco real MySQL 5.1/5.7 (outros bancos só quando solicitado), comprovando gravações com SELECT; nunca criar teste mockado (Mockito, @MockBean, H2, WireMock, stubs, banco in-memory).
+
+Regras de todo projeto (skill `regras-projeto`): ler antes todos os documentos do projeto e obedecer as regras deles (documento prevalece; conflito = DIVERGÊNCIA para o usuário); nunca inventar valores nem alucinar (toda afirmação com `doc:linha`/`arquivo:linha`; sem prova = INFERÊNCIA ou NÃO VERIFICÁVEL); com dúvida, não concluir: devolver a pergunta ao agente principal para o usuário; verificar que nada quebra em homol/deploy/prod, só em leitura; testes só reais contra MySQL conferidos no DBeaver (nunca mock); validar ponta a ponta com os demais subagentes (skill `verificacao-ponta-a-ponta`); ser objetivo, realista e assertivo. Responder em português BR, enxuto; segredos nunca repetidos.

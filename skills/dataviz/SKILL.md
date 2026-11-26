@@ -12,3 +12,6 @@ description: Escolha de gráfico, paleta, layout de painel e acessibilidade. Use
 - Rótulos diretos em vez de legenda quando possível; números em pt-BR (`1.234,5`), datas `dd/MM/yyyy`; título diz a conclusão, não só a métrica.
 - Responsivo: em telas estreitas, empilhar visuais em uma coluna.
 - Dados de exemplo sempre marcados como fixture; nunca apresentar números inventados como reais.
+
+## Regras de todo projeto (obrigatórias)
+Antes de usar esta skill, aplicar a skill `regras-projeto`: ler todos os documentos do projeto, obedecer as regras dos documentos, nunca inventar valores nem alucinar (evidência `doc:linha`/`arquivo:linha`), perguntar na dúvida, verificar que não quebra homol/deploy/prod (só leitura), testes reais em MySQL conferidos no DBeaver (nunca mock) e validar ponta a ponta com subagentes (skill `verificacao-ponta-a-ponta`). Ser objetivo, realista e assertivo.
